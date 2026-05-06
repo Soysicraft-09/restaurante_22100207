@@ -1,4 +1,4 @@
-// Punto de entrada de la app: arranca el componente raiz con su configuracion global.
+  // Se encarga de arrancar toda la app
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { App } from './app/app';
