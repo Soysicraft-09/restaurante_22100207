@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --font-display: 'Inter', 'Segoe UI', sans-serif;
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
+  --ink: #191919;
+  --surface: #ffffff;
+  --page: #f4f2ef;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background:
+    linear-gradient(90deg, rgb(143 31 47 / 5%) 0 1px, transparent 1px 100%),
+    linear-gradient(180deg, rgb(32 26 23 / 4%) 0 1px, transparent 1px 100%),
+    linear-gradient(180deg, #f8f5ef 0%, #f1eee9 100%);
+  background-size: 32px 32px, 32px 32px, auto;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
