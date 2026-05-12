@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+/* Variables globales de diseño.
+   Centralizar colores/fuentes evita repetir valores en cada componente. */
 :root {
   --font-display: 'Inter', 'Segoe UI', sans-serif;
   --font-body: 'Inter', 'Segoe UI', sans-serif;
@@ -8,10 +10,12 @@
   --page: #f4f2ef;
 }
 
+/* Modelo de caja predecible: width incluye padding y border. */
 * {
   box-sizing: border-box;
 }
 
+/* Reset minimo para que el layout ocupe toda la ventana. */
 html,
 body {
   margin: 0;
@@ -20,6 +24,7 @@ body {
 }
 
 body {
+  /* Estilos base de toda la aplicacion: fuente, color y fondo decorativo. */
   min-height: 100vh;
   font-family: var(--font-body);
   color: var(--ink);
@@ -32,6 +37,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Los controles de formulario heredan la tipografia del sitio. */
 button,
 input,
 select,

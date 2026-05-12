@@ -1,4 +1,6 @@
+<!-- Tarjeta reutilizable para mostrar un producto del menu. -->
 <article class="card">
+  <!-- Si el producto tiene imagen, se muestra; si no, se renderiza un placeholder accesible. -->
   @if (item().imageUrl) {
     <img
       class="img"
@@ -13,6 +15,7 @@
   }
 
   <div class="body">
+    <!-- Fila superior: categoria y accion de favorito. -->
     <div class="meta-row">
       <p class="tag">{{ item().category }}</p>
       <button
@@ -30,6 +33,7 @@
       </button>
     </div>
 
+    <!-- Nombre y precio principal del producto. -->
     <div class="top">
       <h3 class="title">{{ item().name }}</h3>
       <span class="price">{{ item().price | currency: 'MXN' }}</span>
@@ -41,6 +45,7 @@
 
     <p class="stock" [class.stock-out]="!item().inStock">{{ availabilityText() }}</p>
 
+    <!-- La tarjeta emite eventos; el padre decide como responder. -->
     <div class="actions">
       <button
         class="ghost-btn"

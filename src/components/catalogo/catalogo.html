@@ -1,4 +1,7 @@
+<!-- Pagina principal del restaurante.
+     Combina landing comercial, catalogo, carrito, checkout y modal de detalle. -->
 <main class="gourmet-page" aria-label="Sitio del restaurante gourmet">
+  <!-- Navegacion superior con anclas a secciones dentro de la misma pagina. -->
   <nav class="top-nav" aria-label="Navegacion principal">
     <a class="brand" href="#inicio">CASA QUETZAL</a>
     <div class="nav-actions">
@@ -14,6 +17,7 @@
     </div>
   </nav>
 
+  <!-- Hero: primera seccion visible; vende el concepto del proyecto. -->
   <header class="hero" id="inicio">
     <div class="hero-content">
       <div class="hero-copy">
@@ -32,6 +36,7 @@
     </div>
   </header>
 
+  <!-- Bloques informativos: justifican viabilidad e historia del restaurante. -->
   <div class="intro-panels" aria-label="Contexto del concepto">
     <section class="insights" aria-labelledby="viabilidad-title">
       <h2 id="viabilidad-title">Senales de viabilidad</h2>
@@ -41,6 +46,8 @@
       </p>
 
       <div class="insight-grid">
+        <!-- @for es el ciclo moderno de Angular para renderizar listas.
+             track card.title ayuda a Angular a identificar cada tarjeta eficientemente. -->
         @for (card of insightCards; track card.title) {
           <article class="insight-card">
             <p class="insight-value">{{ card.value }}</p>
@@ -59,6 +66,7 @@
       </p>
 
       <div class="timeline-grid">
+        <!-- Cada hito viene del arreglo chefMilestones definido en catalogo.ts. -->
         @for (step of chefMilestones; track step.year) {
           <article class="timeline-card">
             <p class="timeline-year">{{ step.year }}</p>
@@ -70,6 +78,7 @@
     </section>
   </div>
 
+  <!-- Catalogo principal: aqui se conectan filtros, busqueda y tarjetas de producto. -->
   <section class="menu-section" id="menu" aria-labelledby="menu-title">
     <div class="section-header">
       <h2 id="menu-title">Menu interactivo con fotografia gastronomica</h2>
@@ -80,6 +89,7 @@
     </div>
 
     <div class="menu-controls" aria-label="Filtros del menu">
+      <!-- Busqueda reactiva: cada input actualiza searchTerm() en el componente. -->
       <input
         class="search-input"
         type="search"
@@ -90,6 +100,7 @@
       />
 
       <div class="category-chips" role="group" aria-label="Categorias del menu">
+        <!-- Las categorias se calculan desde los productos cargados. -->
         @for (category of menuCategories(); track category) {
           <button
             class="chip"
@@ -116,6 +127,7 @@
       </button>
     </div>
 
+    <!-- Estados de carga/error/vacio antes de renderizar la cuadricula. -->
     @if (errorMessage()) {
       <p class="status error">{{ errorMessage() }}</p>
     } @else if (filteredMenuItems().length === 0) {
@@ -124,6 +136,7 @@
       <p class="status">Cargando menu...</p>
     } @else {
       <div class="menu-grid">
+        <!-- ProductoCard es presentacional: recibe item y emite eventos al padre. -->
         @for (dish of filteredMenuItems(); track dish.id) {
           <app-producto-card
             [item]="dish"
@@ -137,6 +150,7 @@
     }
   </section>
 
+  <!-- Recomendaciones calculadas con base en favoritos, carrito y categoria activa. -->
   <section class="recommendations" id="recomendaciones" aria-labelledby="recommendations-title">
     <div class="section-header">
       <h2 id="recommendations-title">Recomendaciones para ti</h2>
@@ -162,6 +176,7 @@
     }
   </section>
 
+  <!-- Favoritos persistidos en localStorage desde catalogo.ts. -->
   <section class="favorites" aria-labelledby="favorites-title">
     <div class="section-header">
       <h2 id="favorites-title">Tus favoritos</h2>
@@ -185,6 +200,7 @@
     }
   </section>
 
+  <!-- Carrito: muestra lineas, cantidades, total y acciones de compra/ticket. -->
   <section class="cart" id="carrito" aria-labelledby="carrito-title">
     <div class="section-header">
       <h2 id="carrito-title">Carrito y ticket XML</h2>
@@ -198,6 +214,7 @@
       <p class="status">Tu carrito esta vacio. Agrega platillos para armar tu pedido gourmet.</p>
     } @else {
       <div class="cart-grid">
+        <!-- Lista accesible de productos agregados al carrito. -->
         <div class="cart-lines" role="list" aria-label="Lineas del carrito">
           @for (line of cartLines(); track line.item.id) {
             <article class="cart-line" role="listitem">
@@ -207,6 +224,7 @@
               </div>
 
               <div class="line-controls" aria-label="Controles de cantidad">
+                <!-- Estos botones delegan incremento/decremento al CarritoService. -->
                 <button
                   type="button"
                   (click)="decrementar(line)"
@@ -234,6 +252,7 @@
         </div>
 
         <aside class="cart-summary" aria-label="Resumen del carrito">
+          <!-- Resumen financiero del pedido actual. -->
           <h3>Resumen de compra</h3>
           <dl>
             <div>
@@ -261,6 +280,8 @@
       </div>
 
       @if (checkoutOpen()) {
+        <!-- Checkout en tres pasos:
+             1) Datos de entrega, 2) Metodo de pago, 3) Confirmacion/PayPal. -->
         <section class="checkout" aria-labelledby="checkout-title">
           <div class="checkout-header">
             <h3 id="checkout-title">Checkout paso a paso</h3>
@@ -268,6 +289,7 @@
           </div>
 
           <form class="checkout-form" [formGroup]="checkoutForm">
+            <!-- Paso 1: datos minimos para entregar el pedido. -->
             @if (checkoutStep() === 1) {
               <div class="checkout-grid">
                 <label>
@@ -297,6 +319,7 @@
               </div>
             }
 
+            <!-- Paso 2: seleccion del metodo de pago. -->
             @if (checkoutStep() === 2) {
               <div class="checkout-grid">
                 <label>
@@ -322,6 +345,7 @@
               </div>
             }
 
+            <!-- Paso 3: revision final. Si el metodo es PayPal, se monta el SDK oficial. -->
             @if (checkoutStep() === 3) {
               @if (!orderCode()) {
                 <div class="checkout-review">
@@ -360,6 +384,7 @@
                   }
                 </div>
               } @else {
+                <!-- Cuando ya existe folio, el pedido fue confirmado y se muestra estado. -->
                 <div class="order-status">
                   <p class="order-code">Folio: {{ orderCode() }}</p>
                   <p>{{ orderStatusLabel() }}</p>
@@ -369,6 +394,7 @@
           </form>
 
           <div class="checkout-actions">
+            <!-- Botonera cambia segun paso actual y metodo de pago. -->
             <button class="ghost-link" type="button" (click)="closeCheckout()">Cerrar</button>
 
             @if (checkoutStep() > 1 && !orderCode()) {
@@ -390,6 +416,7 @@
     }
   </section>
 
+  <!-- Seccion especializada que filtra productos de categoria Mixologia. -->
   <section class="mixology" id="mixologia" aria-labelledby="mixologia-title">
     <h2 id="mixologia-title">Mixologia de autor</h2>
     <p>
@@ -414,6 +441,7 @@
     }
   </section>
 
+  <!-- Propuesta de valor: contenido estatico explicado desde arreglos tipados. -->
   <section class="story" id="conocenos" aria-labelledby="conocenos-title">
     <h2 id="conocenos-title">Propuesta de valor gourmet</h2>
     <div class="pillars-grid">
@@ -426,6 +454,7 @@
     </div>
   </section>
 
+  <!-- Compromisos comerciales/sustentables del concepto ficticio. -->
   <section class="commitments" aria-labelledby="compromisos-title">
     <h2 id="compromisos-title">Sustentabilidad y cumplimiento</h2>
     <div class="commitment-grid">
@@ -438,6 +467,7 @@
     </div>
   </section>
 
+  <!-- Explica que el modelo opera como dark kitchen/delivery, no sucursal fisica. -->
   <section class="delivery" id="pedidos" aria-labelledby="pedidos-title">
     <h2 id="pedidos-title">Pedidos online (sin sucursal fisica)</h2>
     <p>
@@ -461,6 +491,8 @@
     </div>
   </section>
 
+  <!-- Modal de detalle:
+       aparece solo cuando selectedItem() tiene un producto seleccionado. -->
   @if (selectedItem(); as item) {
     <div class="detail-backdrop" (click)="closeDetail()">
       <article

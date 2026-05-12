@@ -1,3 +1,5 @@
+/* El componente raiz ocupa toda la pantalla.
+   Las vistas reales se renderizan dentro del router-outlet de app.html. */
 :host {
   display: block;
   width: 100%;
