@@ -1,0 +1,31 @@
+<section class="user-shell">
+  <a class="back-link" routerLink="/">Volver al restaurante</a>
+  <div class="header-row">
+    <div>
+      <h1>Mi perfil</h1>
+      <p *ngIf="profile()">Correo: {{ profile()?.correo }}</p>
+    </div>
+    <button class="secondary" (click)="logout()">Cerrar sesión</button>
+  </div>
+
+  <form (ngSubmit)="save()" [formGroup]="form" class="user-form">
+    <label>
+      Nombre
+      <input type="text" formControlName="nombre" />
+    </label>
+
+    <label>
+      Correo
+      <input type="email" formControlName="correo" />
+    </label>
+
+    <label>
+      Nueva contraseña
+      <input type="password" formControlName="password" placeholder="Dejar vacio para no cambiar" />
+    </label>
+
+    <button type="submit">Guardar cambios</button>
+    <p class="success" *ngIf="successMessage()">{{ successMessage() }}</p>
+    <p class="error" *ngIf="errorMessage()">{{ errorMessage() }}</p>
+  </form>
+</section>

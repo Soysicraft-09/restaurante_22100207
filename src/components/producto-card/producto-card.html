@@ -1,0 +1,65 @@
+<article class="card">
+  @if (item().imageUrl) {
+    <img
+      class="img"
+      [src]="item().imageUrl"
+      [alt]="item().name"
+      width="320"
+      height="260"
+      loading="lazy"
+    />
+  } @else {
+    <div class="img img-placeholder" aria-hidden="true">Sin imagen</div>
+  }
+
+  <div class="body">
+    <div class="meta-row">
+      <p class="tag">{{ item().category }}</p>
+      <button
+        class="fav-btn"
+        type="button"
+        [class.active]="isFavorite()"
+        [attr.aria-label]="isFavorite() ? 'Quitar de favoritos' : 'Agregar a favoritos'"
+        (click)="onToggleFavorite()"
+      >
+        @if (isFavorite()) {
+          Favorito
+        } @else {
+          Guardar
+        }
+      </button>
+    </div>
+
+    <div class="top">
+      <h3 class="title">{{ item().name }}</h3>
+      <span class="price">{{ item().price | currency: 'MXN' }}</span>
+    </div>
+
+    <p class="desc">{{ item().description }}</p>
+    <p class="meta">Rareza: {{ item().pairing }}</p>
+    <p class="season">Condicion: {{ item().season }}</p>
+
+    <p class="stock" [class.stock-out]="!item().inStock">{{ availabilityText() }}</p>
+
+    <div class="actions">
+      <button
+        class="ghost-btn"
+        type="button"
+        [attr.aria-label]="'Ver detalle de ' + item().name"
+        (click)="onView()"
+      >
+        Ver detalle
+      </button>
+
+      <button
+        class="add-btn"
+        type="button"
+        [disabled]="!item().inStock"
+        [attr.aria-label]="'Agregar ' + item().name + ' al carrito'"
+        (click)="onAdd()"
+      >
+        Agregar al carrito
+      </button>
+    </div>
+  </div>
+</article>
