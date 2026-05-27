@@ -1,0 +1,55 @@
+:host {
+  display: block;
+  padding: 24px;
+}
+
+.history-shell {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 22px;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+button {
+  padding: 10px 16px;
+  background: #5a67d8;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+button:hover {
+  background: #434190;
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.history-list li {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.error {
+  color: #c53030;
+  margin-bottom: 16px;
+}

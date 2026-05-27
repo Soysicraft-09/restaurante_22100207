@@ -1,0 +1,23 @@
+<section class="user-form-shell">
+  <h1>Registro de usuario</h1>
+  <form (ngSubmit)="register()" [formGroup]="form" class="user-form">
+    <label>
+      Nombre
+      <input type="text" formControlName="nombre" placeholder="Tu nombre completo" />
+    </label>
+
+    <label>
+      Correo
+      <input type="email" formControlName="correo" placeholder="correo@ejemplo.com" />
+    </label>
+
+    <label>
+      Contraseña
+      <input type="password" formControlName="password" placeholder="Minimo 6 caracteres" />
+    </label>
+
+    <button type="submit">Crear cuenta</button>
+    <p class="error" *ngIf="errorMessage()">{{ errorMessage() }}</p>
+  </form>
+  <p class="small-link">¿Ya tienes cuenta? <a routerLink="/usuario/login">Inicia sesion aqui</a></p>
+</section>

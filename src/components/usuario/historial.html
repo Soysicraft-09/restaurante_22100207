@@ -1,0 +1,19 @@
+<section class="history-shell">
+  <div class="header-row">
+    <div>
+      <h1>Historial de usuario</h1>
+      <p>Acciones recientes de tu cuenta.</p>
+    </div>
+    <button (click)="logout()">Cerrar sesión</button>
+  </div>
+
+  <div *ngIf="errorMessage()" class="error">{{ errorMessage() }}</div>
+  <ul *ngIf="history().length > 0" class="history-list">
+    <li *ngFor="let item of history()">
+      <strong>{{ item.action }}</strong>
+      <span>{{ item.createdAt | date:'medium' }}</span>
+    </li>
+  </ul>
+
+  <p *ngIf="history().length === 0 && !errorMessage()">No hay acciones registradas aun.</p>
+</section>

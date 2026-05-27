@@ -7,6 +7,8 @@
       <a class="ghost-link" href="#recomendaciones">Recomendaciones</a>
       <a class="ghost-link" href="#mixologia">Mixologia</a>
       <a class="ghost-link" href="#pedidos">Como pedir</a>
+      <a class="ghost-link" routerLink="/usuario/login">Iniciar sesión</a>
+      <a class="ghost-link" routerLink="/usuario/register">Registro</a>
       <a class="toolbar-cart" href="#carrito" aria-label="Ir al carrito">
         <span>Carrito</span>
         <strong>{{ cartItemsCount() }}</strong>
@@ -266,6 +268,10 @@
             <h3 id="checkout-title">Checkout paso a paso</h3>
             <p>Paso {{ checkoutStep() }} de 3</p>
           </div>
+
+          @if (checkoutError()) {
+            <p class="status error">{{ checkoutError() }}</p>
+          }
 
           <form class="checkout-form" [formGroup]="checkoutForm">
             @if (checkoutStep() === 1) {

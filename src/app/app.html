@@ -1,2 +1,14 @@
-<!-- Aqui Angular inyecta la vista que corresponda segun la ruta actual. -->
-<router-outlet />
+<div class="app-shell">
+  <header class="app-header">
+    <a class="brand" routerLink="/">Restaurante</a>
+    <nav class="app-nav">
+      <a routerLink="/usuario/login">Iniciar sesión</a>
+      <a routerLink="/usuario/register">Registro</a>
+      <a routerLink="/usuario/perfil">Perfil</a>
+      <a routerLink="/usuario/historial">Historial</a>
+    </nav>
+  </header>
+  <main>
+    <router-outlet />
+  </main>
+</div>

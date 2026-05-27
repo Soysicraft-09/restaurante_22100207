@@ -72,6 +72,7 @@ export class Catalogo implements OnDestroy {
   readonly selectedItem = signal<MenuItem | null>(null);
   readonly checkoutOpen = signal(false);
   readonly checkoutStep = signal<CheckoutStep>(1);
+  readonly checkoutError = signal('');
   readonly orderStatus = signal<OrderStatus | null>(null);
   readonly orderCode = signal('');
   readonly paypalMessage = signal('');
@@ -87,7 +88,7 @@ export class Catalogo implements OnDestroy {
     }),
     phone: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.pattern(/^[0-9]{10}$/)],
+      validators: [Validators.required],
     }),
     address: new FormControl('', {
       nonNullable: true,
@@ -391,6 +392,7 @@ export class Catalogo implements OnDestroy {
       return;
     }
 
+    this.checkoutError.set('');
     this.checkoutOpen.set(true);
     this.checkoutStep.set(1);
   }
@@ -400,6 +402,7 @@ export class Catalogo implements OnDestroy {
     this.checkoutStep.set(1);
     this.paypalButtonsRendered = false;
     this.paypalMessage.set('');
+    this.checkoutError.set('');
   }
 
   previousCheckoutStep(): void {
@@ -409,19 +412,34 @@ export class Catalogo implements OnDestroy {
       this.checkoutStep.set((step - 1) as CheckoutStep);
       this.paypalButtonsRendered = false;
       this.paypalMessage.set('');
+      this.checkoutError.set('');
     }
   }
 
   nextCheckoutStep(): void {
     const step = this.checkoutStep();
 
-    if (step === 1 && !this.validateStepOne()) {
-      return;
+    if (step === 1) {
+      if (!this.validateStepOne()) {
+        this.checkoutError.set(
+          'Completa los datos de entrega correctamente. El teléfono debe tener 10 dígitos y la dirección al menos 8 caracteres.'
+        );
+        return;
+      }
     }
 
-    if (step === 2 && !this.validateStepTwo()) {
-      return;
+    if (step === 2) {
+      if (!this.validateStepTwo()) {
+        this.checkoutError.set(
+          this.checkoutForm.controls.paymentMethod.value === 'Tarjeta'
+            ? 'Introduce los últimos 4 dígitos válidos de la tarjeta.'
+            : 'Selecciona un método de pago válido.'
+        );
+        return;
+      }
     }
+
+    this.checkoutError.set('');
 
     if (step < 3) {
       this.checkoutStep.set((step + 1) as CheckoutStep);
@@ -434,8 +452,10 @@ export class Catalogo implements OnDestroy {
 
   confirmOrder(): void {
     if (!this.validateStepOne() || !this.validateStepTwo() || this.cartLines().length === 0) {
+      this.checkoutError.set('Completa toda la información necesaria antes de confirmar el pedido.');
       return;
     }
+    this.checkoutError.set('');
 
     const orderCode = this.buildOrderCode();
     const purchasedLines = this.cartLines().map((line) => ({
@@ -482,7 +502,16 @@ export class Catalogo implements OnDestroy {
       control.updateValueAndValidity();
     });
 
-    return controls.every((control) => control.valid);
+    const phoneControl = this.checkoutForm.controls.phone;
+    const sanitizedPhone = this.sanitizePhone(phoneControl.value);
+    const isPhoneValid = sanitizedPhone.length === 10;
+    phoneControl.setErrors(isPhoneValid ? null : { phoneInvalid: true });
+
+    return controls.every((control) => control.valid) && isPhoneValid;
+  }
+
+  private sanitizePhone(value: string): string {
+    return value.replace(/\D/g, '');
   }
 
   private validateStepTwo(): boolean {
