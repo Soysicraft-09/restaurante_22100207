@@ -9,6 +9,8 @@ export interface PaypalCreateOrderResponse {
   approveUrl: string | null;
 }
 
+
+
 export interface PaypalCaptureOrderResponse {
   id: string;
   status: string;

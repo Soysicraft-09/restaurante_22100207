@@ -39,3 +39,4 @@ export class LoginUsuario {
     });
   }
 }
+// Este componente se encarga de mostrar el formulario de login y manejar la logica de autenticacion.
