@@ -1,22 +1,27 @@
+<!-- Vista de registro: crea una cuenta nueva antes de entrar al sistema. -->
 <section class="user-form-shell">
   <a class="back-link" routerLink="/">Volver al restaurante</a>
   <h1>Registro de usuario</h1>
   <form (ngSubmit)="register()" [formGroup]="form" class="user-form">
+    <!-- Nombre visible del usuario. -->
     <label>
       Nombre
       <input type="text" formControlName="nombre" placeholder="Tu nombre completo" />
     </label>
 
+    <!-- Correo unico que servira como identificador de acceso. -->
     <label>
       Correo
       <input type="email" formControlName="correo" placeholder="correo@ejemplo.com" />
     </label>
 
+    <!-- Contrasena inicial, con minimo de longitud para evitar credenciales debiles. -->
     <label>
       Contraseña
       <input type="password" formControlName="password" placeholder="Minimo 6 caracteres" />
     </label>
 
+    <!-- Envía el alta al backend y navega al login cuando sale bien. -->
     <button type="submit">Crear cuenta</button>
     <p class="error" *ngIf="errorMessage()">{{ errorMessage() }}</p>
   </form>

@@ -1,8 +1,10 @@
+/* Shell base de la bitacora del usuario. */
 :host {
   display: block;
   padding: 24px;
 }
 
+/* Tarjeta central del historial. */
 .history-shell {
   max-width: 640px;
   margin: 0 auto;
@@ -12,6 +14,7 @@
   background: #fff;
 }
 
+/* Cabecera con titulo y boton de salida. */
 .header-row {
   display: flex;
   justify-content: space-between;
@@ -20,6 +23,7 @@
   margin-bottom: 22px;
 }
 
+/* Boton de cierre de sesion dentro del historial. */
 button {
   padding: 10px 16px;
   background: #5a67d8;
@@ -30,16 +34,19 @@ button {
   font-weight: 700;
 }
 
+/* Hover del boton. */
 button:hover {
   background: #434190;
 }
 
+/* Lista limpia de acciones del historial. */
 .history-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
+/* Cada fila alinea accion y fecha. */
 .history-list li {
   padding: 14px 16px;
   border-bottom: 1px solid #e2e8f0;
@@ -49,6 +56,7 @@ button:hover {
   align-items: center;
 }
 
+/* Mensaje de error cuando la consulta falla. */
 .error {
   color: #c53030;
   margin-bottom: 16px;

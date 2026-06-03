@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { Router, UrlTree } from '@angular/router';
 import { AuthService } from './auth.service';
 
+// Guarda rutas que solo deben verse cuando existe un token valido.
 export function userGuard(): boolean | UrlTree {
   const auth = inject(AuthService);
   const router = inject(Router);

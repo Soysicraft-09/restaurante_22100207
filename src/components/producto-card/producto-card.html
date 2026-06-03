@@ -1,4 +1,6 @@
+<!-- Tarjeta compacta de un platillo con imagen, metadatos, favoritos y acciones. -->
 <article class="card">
+  <!-- Si no hay imagen se muestra un placeholder para no romper la grilla visual. -->
   @if (item().imageUrl) {
     <img
       class="img"
@@ -13,6 +15,7 @@
   }
 
   <div class="body">
+    <!-- Categoria + favorito, que son las dos acciones rapidas de la tarjeta. -->
     <div class="meta-row">
       <p class="tag">{{ item().category }}</p>
       <button
@@ -30,17 +33,20 @@
       </button>
     </div>
 
+    <!-- Nombre y precio forman el encabezado comercial del producto. -->
     <div class="top">
       <h3 class="title">{{ item().name }}</h3>
       <span class="price">{{ item().price | currency: 'MXN' }}</span>
     </div>
 
+    <!-- Descripcion corta y datos de maridaje/temporada para apoyar la compra. -->
     <p class="desc">{{ item().description }}</p>
     <p class="meta">Rareza: {{ item().pairing }}</p>
     <p class="season">Condicion: {{ item().season }}</p>
 
     <p class="stock" [class.stock-out]="!item().inStock">{{ availabilityText() }}</p>
 
+    <!-- Acciones principales: abrir detalle o agregar al carrito. -->
     <div class="actions">
       <button
         class="ghost-btn"

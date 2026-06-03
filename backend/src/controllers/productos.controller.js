@@ -1,6 +1,8 @@
 const db = require('../config/db');
 const productosSeed = require('../data/productos.seed');
 
+// Convierte el seed local al mismo formato que expone la API para que la vista
+// no dependa de si los datos vienen de la base o del respaldo inicial.
 const mapSeedToApi = () =>
   productosSeed.map((producto, index) => ({
     id: index + 1,
@@ -14,6 +16,8 @@ const mapSeedToApi = () =>
     season: producto.temporada,
   }));
 
+// Devuelve el catalogo de productos desde MySQL y, si la tabla no existe o esta
+// vacia, cae al seed local para que el frontend siga funcionando.
 const getProductos = (req, res) => {
   const sql = `
     SELECT

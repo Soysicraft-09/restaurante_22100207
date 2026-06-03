@@ -16,10 +16,12 @@ export class ProductoCard {
   readonly toggleFavorite = output<MenuItem>();
   readonly view = output<MenuItem>();
 
+  // Traduce el estado de inventario a un texto amigable para la interfaz.
   readonly availabilityText = computed(() =>
     this.item().inStock ? 'Disponible para envio' : 'Agotada temporalmente'
   );
 
+  // Emite el evento de agregar solo si el platillo sigue disponible.
   onAdd(): void {
     if (!this.item().inStock) {
       return;
@@ -28,10 +30,12 @@ export class ProductoCard {
     this.add.emit(this.item());
   }
 
+  // Alterna el estado de favorito desde el componente padre.
   onToggleFavorite(): void {
     this.toggleFavorite.emit(this.item());
   }
 
+  // Notifica al padre que quiere abrirse el detalle del platillo.
   onView(): void {
     this.view.emit(this.item());
   }

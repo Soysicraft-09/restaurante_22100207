@@ -765,6 +765,7 @@ export class Catalogo implements OnDestroy {
   }
 
   private clearOrderTimers(): void {
+    // Cancela cualquier simulacion de tracking pendiente antes de desmontar o reiniciar el pedido.
     for (const timer of this.orderTimers) {
       clearTimeout(timer);
     }
@@ -779,6 +780,7 @@ export class Catalogo implements OnDestroy {
   }
 
   private readFavoriteIds(): number[] {
+    // Recupera favoritos persistidos, pero ignora cualquier dato corrupto o incoherente.
     try {
       const raw = localStorage.getItem(this.favoritesStorageKey);
 
@@ -799,6 +801,7 @@ export class Catalogo implements OnDestroy {
   }
 
   private persistFavoriteIds(ids: number[]): void {
+    // La persistencia de favoritos es secundaria; si falla, la UI sigue funcionando.
     try {
       localStorage.setItem(this.favoritesStorageKey, JSON.stringify(ids));
     } catch {

@@ -1,4 +1,5 @@
 <main class="gourmet-page" aria-label="Sitio del restaurante gourmet">
+  <!-- Barra superior fija con accesos a catalogo, cuenta y carrito. -->
   <nav class="top-nav" aria-label="Navegacion principal">
     <a class="brand" href="#inicio">CASA QUETZAL</a>
     <div class="nav-actions">
@@ -22,6 +23,7 @@
     </div>
   </nav>
 
+  <!-- Hero principal: define el tono visual y explica la propuesta del proyecto. -->
   <header class="hero" id="inicio">
     <div class="hero-content">
       <div class="hero-copy">
@@ -40,6 +42,7 @@
     </div>
   </header>
 
+  <!-- Bloques editoriales con contexto de marca, historia y viabilidad. -->
   <div class="intro-panels" aria-label="Contexto del concepto">
     <section class="insights" aria-labelledby="viabilidad-title">
       <h2 id="viabilidad-title">Senales de viabilidad</h2>
@@ -78,6 +81,7 @@
     </section>
   </div>
 
+  <!-- Catalogo filtrable desde el que se agregan platillos al carrito. -->
   <section class="menu-section" id="menu" aria-labelledby="menu-title">
     <div class="section-header">
       <h2 id="menu-title">Menu interactivo con fotografia gastronomica</h2>
@@ -145,6 +149,7 @@
     }
   </section>
 
+  <!-- Recomendaciones dinamicas basadas en carrito, filtros y favoritos. -->
   <section class="recommendations" id="recomendaciones" aria-labelledby="recommendations-title">
     <div class="section-header">
       <h2 id="recommendations-title">Recomendaciones para ti</h2>
@@ -170,6 +175,7 @@
     }
   </section>
 
+  <!-- Favoritos guardados por el usuario para acceso rapido. -->
   <section class="favorites" aria-labelledby="favorites-title">
     <div class="section-header">
       <h2 id="favorites-title">Tus favoritos</h2>
@@ -193,6 +199,7 @@
     }
   </section>
 
+  <!-- Carrito, resumen y checkout paso a paso con opcion de PayPal. -->
   <section class="cart" id="carrito" aria-labelledby="carrito-title">
     <div class="section-header">
       <h2 id="carrito-title">Carrito y ticket XML</h2>
@@ -361,8 +368,8 @@
                   </dl>
 
                   @if (checkoutForm.controls.paymentMethod.value === 'PayPal') {
-                    <!-- Punto de montaje del SDK oficial.
-                         Angular NO dibuja el boton manualmente; PayPal lo inyecta dentro de este div. -->
+                       <!-- Punto de montaje del SDK oficial.
+                         Angular no dibuja el boton manualmente; PayPal lo inyecta dentro de este div. -->
                     <div class="paypal-box">
                       <div id="paypal-button-container"></div>
                       @if (paypalMessage()) {

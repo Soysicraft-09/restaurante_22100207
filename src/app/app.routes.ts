@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { userGuard } from '../services/auth.guard';
 
+// Rutas principales de la experiencia: catalogo, autenticacion y secciones protegidas.
 export const routes: Routes = [
   {
     path: '',

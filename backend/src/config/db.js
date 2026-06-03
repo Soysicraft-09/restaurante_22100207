@@ -1,6 +1,7 @@
 const mysql = require('mysql2');
 require('./env');
 
+// Crea una conexion unica a MySQL usando la configuracion cargada desde env.
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -9,6 +10,7 @@ const connection = mysql.createConnection({
   port: Number(process.env.DB_PORT || 3306)
 });
 
+// Intenta conectar al iniciar el proceso para fallar rapido si la base no responde.
 connection.connect((error) => {
   if (error) {
     console.error('Error al conectar con MySQL:', {
@@ -23,4 +25,5 @@ connection.connect((error) => {
   console.log('Conexion a MySQL exitosa.');
 });
 
+// Exporta la conexion compartida para que controllers y scripts reutilicen el mismo pool.
 module.exports = connection;

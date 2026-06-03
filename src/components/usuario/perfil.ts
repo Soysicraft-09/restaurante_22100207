@@ -18,6 +18,7 @@ export class PerfilUsuario {
   readonly successMessage = signal('');
   readonly profile = signal<UserProfile | null>(null);
 
+  // Formulario de edicion del perfil; la contrasena es opcional para no forzar cambios.
   readonly form = new FormGroup({
     nombre: new FormControl('', [Validators.required]),
     correo: new FormControl('', [Validators.required, Validators.email]),
@@ -25,9 +26,11 @@ export class PerfilUsuario {
   });
 
   constructor() {
+    // Carga el perfil real apenas se crea el componente.
     this.loadProfile();
   }
 
+  // Trae el perfil desde el backend y sincroniza la UI con los datos actuales.
   private loadProfile() {
     this.authService.getProfile().subscribe({
       next: (profile) => {
@@ -40,6 +43,7 @@ export class PerfilUsuario {
     });
   }
 
+  // Envía los cambios del usuario al backend y actualiza mensajes de estado.
   save() {
     if (this.form.invalid) {
       this.errorMessage.set('Completa nombre y correo con datos validos.');
@@ -67,6 +71,7 @@ export class PerfilUsuario {
     });
   }
 
+  // Cierra la sesion local y vuelve a la pantalla de login.
   logout() {
     this.authService.logout();
     this.router.navigate(['/usuario/login']);

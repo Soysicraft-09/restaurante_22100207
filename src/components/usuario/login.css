@@ -1,8 +1,10 @@
+/* Shell base de las pantallas de autentificacion. */
 :host {
   display: block;
   padding: 24px;
 }
 
+/* Contenedor central del formulario de login. */
 .user-form-shell {
   max-width: 380px;
   margin: 0 auto;
@@ -12,6 +14,7 @@
   background: #fff;
 }
 
+/* Enlace de regreso al catalogo principal. */
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -27,16 +30,19 @@
   font-weight: 700;
 }
 
+/* Estados hover del enlace de regreso. */
 .back-link:hover {
   background: #edf2f7;
 }
 
+/* Etiquetas y campos del formulario. */
 .user-form label {
   display: block;
   margin-bottom: 16px;
   font-weight: 600;
 }
 
+/* Inputs simples para correo y contrasena. */
 .user-form input {
   width: 100%;
   padding: 10px 12px;
@@ -45,6 +51,7 @@
   margin-top: 8px;
 }
 
+/* Boton de envio del formulario. */
 button {
   width: 100%;
   padding: 12px 16px;
@@ -56,20 +63,24 @@ button {
   font-weight: 700;
 }
 
+/* Hover del boton de login. */
 button:hover {
   background: #2c5282;
 }
 
+/* Mensaje de error visible debajo del formulario. */
 .error {
   color: #c53030;
   margin-top: 14px;
 }
 
+/* Enlace secundario a la pantalla de registro. */
 .small-link {
   margin-top: 18px;
   text-align: center;
 }
 
+/* Color del link de registro. */
 .small-link a {
   color: #2b6cb0;
   text-decoration: none;

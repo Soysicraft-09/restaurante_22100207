@@ -1,3 +1,4 @@
+<!-- Bitacora simple de acciones del usuario con salida en orden cronologico. -->
 <section class="history-shell">
   <div class="header-row">
     <div>
@@ -8,6 +9,7 @@
   </div>
 
   <div *ngIf="errorMessage()" class="error">{{ errorMessage() }}</div>
+  <!-- Lista de eventos, cada uno con accion y fecha de registro. -->
   <ul *ngIf="history().length > 0" class="history-list">
     <li *ngFor="let item of history()">
       <strong>{{ item.action }}</strong>

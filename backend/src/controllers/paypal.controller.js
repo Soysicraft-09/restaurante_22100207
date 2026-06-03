@@ -11,6 +11,7 @@ const getPaypalBaseUrl = () => {
   return PAYPAL_API_BASE[environment];
 };
 
+// Obtiene un access token temporal usando las credenciales privadas del backend.
 const getPaypalAccessToken = async () => {
   // Estas credenciales son SECRETAS: solo deben existir en backend/.env.
   // El frontend usa clientId publico, pero nunca debe conocer clientSecret.
@@ -45,6 +46,8 @@ const getPaypalAccessToken = async () => {
   return data.access_token;
 };
 
+// Crea la orden inicial en PayPal. Esto todavia no cobra; solo deja la orden lista
+// para que el usuario la apruebe en la ventana de PayPal.
 const createPaypalOrder = async (req, res) => {
   try {
     const { amount, currency = 'MXN' } = req.body;
@@ -95,6 +98,7 @@ const createPaypalOrder = async (req, res) => {
   }
 };
 
+// Captura la orden despues de la aprobacion del usuario. Aqui PayPal completa el cobro.
 const capturePaypalOrder = async (req, res) => {
   try {
     const { orderId } = req.params;

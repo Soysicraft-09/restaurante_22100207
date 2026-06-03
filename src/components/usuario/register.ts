@@ -16,12 +16,14 @@ export class RegistroUsuario {
   private readonly router = inject(Router);
   readonly errorMessage = signal('');
 
+  // Formulario reactivo para crear cuenta con validaciones basicas de seguridad.
   readonly form = new FormGroup({
     nombre: new FormControl('', [Validators.required]),
     correo: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required, Validators.minLength(6)])
   });
 
+  // Registra al usuario y lo manda al login cuando el backend confirma el alta.
   register() {
     if (this.form.invalid) {
       this.errorMessage.set('Verifica que todos los campos esten correctamente llenados.');

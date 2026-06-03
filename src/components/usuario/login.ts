@@ -16,11 +16,13 @@ export class LoginUsuario {
   private readonly router = inject(Router);
   readonly errorMessage = signal('');
 
+  // Formulario reactivo con validaciones minimas para correo y contrasena.
   readonly form = new FormGroup({
     correo: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required])
   });
 
+  // Intenta iniciar sesion y redirige al perfil si el backend devuelve token.
   login() {
     if (this.form.invalid) {
       this.errorMessage.set('Completa todos los campos con datos validos.');
