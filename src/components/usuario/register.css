@@ -1,10 +1,10 @@
-/* Shell base de la pantalla de registro. */
+/* [BUSCAR: USUARIO INTERFAZ] Shell base de la pantalla de registro. */
 :host {
   display: block;
   padding: 24px;
 }
 
-/* Contenedor centrado del formulario de alta. */
+/* [BUSCAR: FORMULARIO] Contenedor centrado del formulario de alta. */
 .user-form-shell {
   max-width: 380px;
   margin: 0 auto;
@@ -14,7 +14,7 @@
   background: #fff;
 }
 
-/* Link de retorno al restaurante. */
+/* [BUSCAR: USUARIO] Link de retorno al restaurante. */
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -30,19 +30,19 @@
   font-weight: 700;
 }
 
-/* Hover del link de retorno. */
+/* [BUSCAR: INTERFAZ] Hover del link de retorno. */
 .back-link:hover {
   background: #edf2f7;
 }
 
-/* Etiquetas del formulario. */
+/* [BUSCAR: FORMULARIO] Etiquetas del formulario. */
 .user-form label {
   display: block;
   margin-bottom: 16px;
   font-weight: 600;
 }
 
-/* Inputs de nombre, correo y contrasena. */
+/* [BUSCAR: CORREO AUTENTICACION] Inputs de nombre, correo y contrasena. */
 .user-form input {
   width: 100%;
   padding: 10px 12px;
@@ -51,7 +51,7 @@
   margin-top: 8px;
 }
 
-/* Boton principal para crear la cuenta. */
+/* [BUSCAR: INTERFAZ] Boton principal para crear la cuenta. */
 button {
   width: 100%;
   padding: 12px 16px;
@@ -63,24 +63,24 @@ button {
   font-weight: 700;
 }
 
-/* Hover del boton de alta. */
+/* [BUSCAR: INTERFAZ] Hover del boton de alta. */
 button:hover {
   background: #276749;
 }
 
-/* Mensaje de error de registro. */
+/* [BUSCAR: USUARIO ERRORES] Mensaje de error de registro. */
 .error {
   color: #c53030;
   margin-top: 14px;
 }
 
-/* Enlace secundario hacia login. */
+/* [BUSCAR: AUTENTICACION INTERFAZ] Enlace secundario hacia login. */
 .small-link {
   margin-top: 18px;
   text-align: center;
 }
 
-/* Color del link hacia iniciar sesion. */
+/* [BUSCAR: AUTENTICACION] Color del link hacia iniciar sesion. */
 .small-link a {
   color: #2f855a;
   text-decoration: none;

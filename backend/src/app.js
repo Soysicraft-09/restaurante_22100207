@@ -7,29 +7,51 @@ require('./config/init-db');
 
 const app = express();
 
-// CORS permite que Angular en localhost:4200 consuma este backend en localhost:3000.
+// [BUSCAR: API ANGULAR] CORS permite que Angular en localhost:4200 consuma este backend en localhost:3000.
 app.use(cors());
 
-// Necesario para leer req.body cuando Angular envia JSON al crear la orden de PayPal.
+// [BUSCAR: PAYPAL PEDIDO ANGULAR] Necesario para leer req.body cuando Angular envia JSON al crear la orden de PayPal.
 app.use(express.json());
 
-// Ruta simple de salud para comprobar rapido que el backend responde.
+// [BUSCAR: API] Ruta simple de salud para comprobar rapido que el backend responde.
 app.get('/health', (req, res) => {
   res.json({ ok: true, service: 'mi-proyecto-backend' });
 });
 
-// Enruta las operaciones de pago hacia el controlador de PayPal.
+// [BUSCAR: PAYPAL PAGO] Enruta las operaciones de pago hacia el controlador de PayPal.
 app.use('/api/paypal', paypalRoutes);
-// Expone el catalogo de productos.
+// [BUSCAR: PRODUCTO] Expone el catalogo de productos.
 app.use('/api', productosRoutes);
-// Agrupa registro, login, perfil e historial del usuario.
+// [BUSCAR: AUTENTICACION USUARIO] Agrupa registro, login, perfil e historial del usuario.
 app.use('/api/user', userRoutes);
 
-// Rutas de usuario:
-// POST /api/user/register
-// POST /api/user/login
-// GET /api/user/profile
-// PUT /api/user/profile
-// GET /api/user/history
+// [BUSCAR: USUARIO] Rutas de usuario:
+// [BUSCAR: API] POST /api/user/register
+// [BUSCAR: AUTENTICACION API] POST /api/user/login
+// [BUSCAR: API] GET /api/user/profile
+// [BUSCAR: API] PUT /api/user/profile
+// [BUSCAR: API] GET /api/user/history
+
+// [BUSCAR: API] Las APIs deben responder JSON incluso cuando la ruta no existe.
+// [BUSCAR: API ERRORES] Si Express devuelve HTML, el frontend falla intentando parsearlo como JSON.
+app.use('/api', (req, res) => {
+  res.status(404).json({
+    error: 'Ruta API no encontrada',
+    method: req.method,
+    path: req.originalUrl
+  });
+});
+
+// [BUSCAR: API ERRORES] Ultima red de seguridad para errores no capturados en rutas API.
+app.use((error, req, res, next) => {
+  if (req.originalUrl.startsWith('/api')) {
+    return res.status(500).json({
+      error: 'Error interno del backend',
+      message: error.message
+    });
+  }
+
+  return next(error);
+});
 
 module.exports = app;

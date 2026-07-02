@@ -1,7 +1,7 @@
 const db = require('./db');
 const productosSeed = require('../data/productos.seed');
 
-// Tabla principal de usuarios: guarda perfil, correo unico y hash de contrasena.
+// [BUSCAR: CORREO AUTENTICACION USUARIO BASE_DATOS] Tabla principal de usuarios: guarda perfil, correo unico y hash de contrasena.
 const createUsersTable = `
   CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -13,7 +13,7 @@ const createUsersTable = `
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 `;
 
-// Bitacora simple para registrar acciones importantes del usuario.
+// [BUSCAR: USUARIO] Bitacora simple para registrar acciones importantes del usuario.
 const createHistoryTable = `
   CREATE TABLE IF NOT EXISTS user_history (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -24,7 +24,7 @@ const createHistoryTable = `
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 `;
 
-// Catalogo de productos del restaurante, con datos visibles en el frontend.
+// [BUSCAR: PRODUCTO] Catalogo de productos del restaurante, con datos visibles en el frontend.
 const createProductosTable = `
   CREATE TABLE IF NOT EXISTS productos (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -41,7 +41,7 @@ const createProductosTable = `
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 `;
 
-// Ejecuta una sentencia de migracion y reporta si la tabla quedo lista.
+// [BUSCAR: BASE_DATOS] Ejecuta una sentencia de migracion y reporta si la tabla quedo lista.
 const runMigration = (sql, name) => {
   db.query(sql, (error) => {
     if (error) {
@@ -53,7 +53,7 @@ const runMigration = (sql, name) => {
   });
 };
 
-// Si no hay productos cargados, inserta el seed local para evitar una pantalla vacia.
+// [BUSCAR: PRODUCTO INTERFAZ] Si no hay productos cargados, inserta el seed local para evitar una pantalla vacia.
 const seedProductosIfNeeded = () => {
   db.query('SELECT COUNT(*) AS total FROM productos', (error, rows) => {
     if (error) {
@@ -96,7 +96,7 @@ const seedProductosIfNeeded = () => {
   });
 };
 
-// Al importar este modulo se verifican tablas y se siembra el catalogo base.
+// [BUSCAR: PRODUCTO] Al importar este modulo se verifican tablas y se siembra el catalogo base.
 runMigration(createUsersTable, 'users');
 runMigration(createHistoryTable, 'user_history');
 runMigration(createProductosTable, 'productos');

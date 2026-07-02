@@ -1,5 +1,5 @@
-// Contrato central del menu.
-// Si backend, XML y frontend respetan esta forma, la UI no necesita saber de donde vino el dato.
+// [BUSCAR: PRODUCTO] Contrato central del menu.
+// [BUSCAR: TICKET API INTERFAZ] Si backend, XML y frontend respetan esta forma, la UI no necesita saber de donde vino el dato.
 export interface MenuItem {
   id: number;
   name: string;

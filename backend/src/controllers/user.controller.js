@@ -4,15 +4,19 @@ const jwt = require('jsonwebtoken');
 
 const jwtSecret = process.env.JWT_SECRET || 'mi_jwt_secreto_local';
 const tokenExpiration = '7d';
+const adminEmail = process.env.ADMIN_EMAIL || 'admin111@gmail.com';
+const adminPassword = process.env.ADMIN_PASSWORD || 'adminmegapro';
 
-// Crea el JWT que Angular guardara para autenticar las peticiones posteriores.
-const createToken = (user) => {
-  return jwt.sign({ id: user.id, email: user.correo }, jwtSecret, {
+// [BUSCAR: AUTENTICACION ANGULAR] Crea el JWT que Angular guardara para autenticar las peticiones posteriores.
+const createToken = (user, role = 'cliente') => {
+  return jwt.sign({ id: user.id, email: user.correo, role }, jwtSecret, {
     expiresIn: tokenExpiration
   });
 };
 
-// Guarda en la tabla de historial una accion relevante del usuario.
+const isAdminEmail = (correo = '') => correo.trim().toLowerCase() === adminEmail.toLowerCase();
+
+// [BUSCAR: USUARIO BASE_DATOS] Guarda en la tabla de historial una accion relevante del usuario.
 const logHistory = (userId, action) => {
   const sql = 'INSERT INTO user_history (user_id, action) VALUES (?, ?)';
   db.query(sql, [userId, action], (error) => {
@@ -22,18 +26,23 @@ const logHistory = (userId, action) => {
   });
 };
 
-// Registra un usuario nuevo, evitando correos duplicados y almacenando la contrasena como hash.
+// [BUSCAR: AUTENTICACION USUARIO] Registra un usuario nuevo, evitando correos duplicados y almacenando la contrasena como hash.
 const register = (req, res) => {
   const { nombre, correo, password } = req.body;
+  const normalizedCorreo = typeof correo === 'string' ? correo.trim().toLowerCase() : '';
 
   if (!nombre || !correo || !password) {
-    return res.status(400).json({ error: 'Nombre, correo y contraseña son obligatorios' });
+    return res.status(400).json({ error: 'Nombre, correo y contrasena son obligatorios' });
+  }
+
+  if (isAdminEmail(normalizedCorreo)) {
+    return res.status(403).json({ error: 'Este correo esta reservado para el administrador' });
   }
 
   const hashedPassword = bcrypt.hashSync(password, 10);
 
   const checkSql = 'SELECT id FROM users WHERE correo = ? LIMIT 1';
-  db.query(checkSql, [correo], (checkError, results) => {
+  db.query(checkSql, [normalizedCorreo], (checkError, results) => {
     if (checkError) {
       return res.status(500).json({ error: 'Error al validar el correo' });
     }
@@ -43,7 +52,7 @@ const register = (req, res) => {
     }
 
     const insertSql = 'INSERT INTO users (nombre, correo, password_hash) VALUES (?, ?, ?)';
-    db.query(insertSql, [nombre, correo, hashedPassword], (insertError, insertResult) => {
+    db.query(insertSql, [nombre, normalizedCorreo, hashedPassword], (insertError, insertResult) => {
       if (insertError) {
         return res.status(500).json({ error: 'Error al registrar el usuario' });
       }
@@ -54,40 +63,57 @@ const register = (req, res) => {
   });
 };
 
-// Valida credenciales, emite token JWT y registra el inicio de sesion.
+// [BUSCAR: AUTENTICACION] Valida credenciales, emite token JWT y registra el inicio de sesion.
 const login = (req, res) => {
   const { correo, password } = req.body;
+  const normalizedCorreo = typeof correo === 'string' ? correo.trim().toLowerCase() : '';
+  const normalizedAdminPassword = typeof password === 'string' ? password.trim() : '';
 
   if (!correo || !password) {
-    return res.status(400).json({ error: 'Correo y contraseña son obligatorios' });
+    return res.status(400).json({ error: 'Correo y contrasena son obligatorios' });
+  }
+
+  if (isAdminEmail(normalizedCorreo)) {
+    if (normalizedAdminPassword !== adminPassword) {
+      return res.status(401).json({ error: 'Correo o contrasena incorrectos' });
+    }
+
+    const adminUser = { id: 0, nombre: 'Administrador', correo: adminEmail };
+    const token = createToken(adminUser, 'admin');
+
+    return res.json({ token, role: 'admin' });
   }
 
   const sql = 'SELECT id, nombre, correo, password_hash FROM users WHERE correo = ? LIMIT 1';
-  db.query(sql, [correo], (error, results) => {
+  db.query(sql, [normalizedCorreo], (error, results) => {
     if (error) {
       return res.status(500).json({ error: 'Error buscando el usuario' });
     }
 
     if (results.length === 0) {
-      return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
+      return res.status(401).json({ error: 'Correo o contrasena incorrectos' });
     }
 
     const user = results[0];
     const isValid = bcrypt.compareSync(password, user.password_hash);
 
     if (!isValid) {
-      return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
+      return res.status(401).json({ error: 'Correo o contrasena incorrectos' });
     }
 
-    const token = createToken(user);
+    const token = createToken(user, 'cliente');
     logHistory(user.id, 'Usuario inicio sesion');
 
-    return res.json({ token });
+    return res.json({ token, role: 'cliente' });
   });
 };
 
-// Devuelve los datos publicos del usuario autenticado usando req.user que inyecta el middleware.
+// [BUSCAR: AUTENTICACION USUARIO] Devuelve los datos publicos del usuario autenticado usando req.user que inyecta el middleware.
 const getProfile = (req, res) => {
+  if (req.user.role === 'admin') {
+    return res.json({ id: 0, nombre: 'Administrador', correo: adminEmail, role: 'admin' });
+  }
+
   const sql = 'SELECT id, nombre, correo FROM users WHERE id = ? LIMIT 1';
   db.query(sql, [req.user.id], (error, results) => {
     if (error) {
@@ -102,8 +128,12 @@ const getProfile = (req, res) => {
   });
 };
 
-// Actualiza nombre, correo y opcionalmente contrasena del usuario autenticado.
+// [BUSCAR: CORREO AUTENTICACION USUARIO] Actualiza nombre, correo y opcionalmente contrasena del usuario autenticado.
 const updateProfile = (req, res) => {
+  if (req.user.role === 'admin') {
+    return res.status(403).json({ error: 'El perfil administrador no se edita desde esta pantalla' });
+  }
+
   const { nombre, correo, password } = req.body;
 
   if (!nombre || !correo) {
@@ -140,7 +170,7 @@ const updateProfile = (req, res) => {
   });
 };
 
-// Devuelve una bitacora descendente de acciones para mostrar el historial del usuario.
+// [BUSCAR: USUARIO] Devuelve una bitacora descendente de acciones para mostrar el historial del usuario.
 const getHistory = (req, res) => {
   const sql = 'SELECT action, created_at AS createdAt FROM user_history WHERE user_id = ? ORDER BY created_at DESC';
   db.query(sql, [req.user.id], (error, results) => {

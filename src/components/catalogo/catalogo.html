@@ -1,5 +1,5 @@
 <main class="gourmet-page" aria-label="Sitio del restaurante gourmet">
-  <!-- Barra superior fija con accesos a catalogo, cuenta y carrito. -->
+  <!-- [BUSCAR: CARRITO PRODUCTO] Barra superior fija con accesos a catalogo, cuenta y carrito. -->
   <nav class="top-nav" aria-label="Navegacion principal">
     <a class="brand" href="#inicio">CASA QUETZAL</a>
     <div class="nav-actions">
@@ -16,14 +16,18 @@
       <a class="ghost-link" routerLink="/usuario/register">Registro</a>
       <a class="ghost-link" routerLink="/usuario/perfil">Perfil</a>
       <a class="ghost-link" routerLink="/usuario/historial">Historial</a>
-      <a class="toolbar-cart" href="#carrito" aria-label="Ir al carrito">
-        <span>Carrito</span>
-        <strong>{{ cartItemsCount() }}</strong>
-      </a>
+      @if (canBuy()) {
+        <a class="toolbar-cart" href="#carrito" aria-label="Ir al carrito">
+          <span>Carrito</span>
+          <strong>{{ cartItemsCount() }}</strong>
+        </a>
+      } @else if (isAdmin()) {
+        <span class="session-badge" aria-live="polite">Admin</span>
+      }
     </div>
   </nav>
 
-  <!-- Hero principal: define el tono visual y explica la propuesta del proyecto. -->
+  <!-- [BUSCAR: INTERFAZ] Hero principal: define el tono visual y explica la propuesta del proyecto. -->
   <header class="hero" id="inicio">
     <div class="hero-content">
       <div class="hero-copy">
@@ -36,13 +40,15 @@
 
         <div class="hero-ctas">
           <a class="primary-link" href="#menu">Explorar menu</a>
-          <a class="secondary-link" href="#carrito">Ver carrito</a>
+          @if (canBuy()) {
+            <a class="secondary-link" href="#carrito">Ver carrito</a>
+          }
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Bloques editoriales con contexto de marca, historia y viabilidad. -->
+  <!-- [BUSCAR: CATALOGO] Bloques editoriales con contexto de marca, historia y viabilidad. -->
   <div class="intro-panels" aria-label="Contexto del concepto">
     <section class="insights" aria-labelledby="viabilidad-title">
       <h2 id="viabilidad-title">Senales de viabilidad</h2>
@@ -81,7 +87,7 @@
     </section>
   </div>
 
-  <!-- Catalogo filtrable desde el que se agregan platillos al carrito. -->
+  <!-- [BUSCAR: CARRITO PRODUCTO] Catalogo filtrable desde el que se agregan platillos al carrito. -->
   <section class="menu-section" id="menu" aria-labelledby="menu-title">
     <div class="section-header">
       <h2 id="menu-title">Menu interactivo con fotografia gastronomica</h2>
@@ -128,6 +134,82 @@
       </button>
     </div>
 
+    @if (isAdmin()) {
+      <div class="admin-panel" aria-label="Panel de administracion de productos">
+        <div>
+          <h3>Panel de administrador</h3>
+          <p>Como administrador puedes modificar productos. Los clientes solo pueden comprar.</p>
+        </div>
+
+        <button class="primary-link admin-add-button" type="button" (click)="nuevoProducto()">
+          Agregar producto
+        </button>
+
+        @if (adminProductMessage()) {
+          <p class="status success">{{ adminProductMessage() }}</p>
+        }
+
+        @if (adminProductError()) {
+          <p class="status error">{{ adminProductError() }}</p>
+        }
+
+        @if (adminProductFormOpen()) {
+          <form class="admin-product-form" [formGroup]="adminProductForm" (ngSubmit)="guardarProductoAdmin()">
+            <h4 class="full-row">
+              @if (editingProduct()) {
+                Editar producto
+              } @else {
+                Agregar producto nuevo
+              }
+            </h4>
+            <label>
+              Nombre
+              <input formControlName="name" type="text" />
+            </label>
+            <label>
+              Precio
+              <input formControlName="price" type="number" min="1" />
+            </label>
+            <label>
+              Imagen URL
+              <input formControlName="imageUrl" type="text" />
+            </label>
+            <label>
+              Categoria
+              <input formControlName="category" type="text" />
+            </label>
+            <label class="full-row">
+              Descripcion
+              <textarea formControlName="description" rows="3"></textarea>
+            </label>
+            <label>
+              Maridaje / rareza
+              <input formControlName="pairing" type="text" />
+            </label>
+            <label>
+              Temporada / condicion
+              <input formControlName="season" type="text" />
+            </label>
+            <label class="checkbox-row">
+              <input formControlName="inStock" type="checkbox" />
+              Disponible
+            </label>
+
+            <div class="admin-form-actions full-row">
+              <button class="primary-link" type="submit">
+                @if (editingProduct()) {
+                  Guardar cambios
+                } @else {
+                  Agregar producto
+                }
+              </button>
+              <button class="secondary-link" type="button" (click)="cancelarEdicionProducto()">Cancelar</button>
+            </div>
+          </form>
+        }
+      </div>
+    }
+
     @if (errorMessage()) {
       <p class="status error">{{ errorMessage() }}</p>
     } @else if (filteredMenuItems().length === 0) {
@@ -137,19 +219,33 @@
     } @else {
       <div class="menu-grid">
         @for (dish of filteredMenuItems(); track dish.id) {
-          <app-producto-card
-            [item]="dish"
-            [isFavorite]="isFavorite(dish.id)"
-            (add)="agregarAlCarrito($event)"
-            (toggleFavorite)="toggleFavorito($event)"
-            (view)="openDetail($event)"
-          ></app-producto-card>
+          <div class="admin-product-shell">
+            <app-producto-card
+              [item]="dish"
+              [isFavorite]="isFavorite(dish.id)"
+              [canBuy]="canBuy()"
+              [blockedActionText]="purchaseBlockedText()"
+              (add)="agregarAlCarrito($event)"
+              (toggleFavorite)="toggleFavorito($event)"
+              (view)="openDetail($event)"
+            ></app-producto-card>
+            @if (isAdmin()) {
+              <div class="admin-product-actions">
+                <button class="admin-edit-button" type="button" (click)="editarProducto(dish)">
+                  Editar producto
+                </button>
+                <button class="admin-delete-button" type="button" (click)="eliminarProducto(dish)">
+                  Eliminar producto
+                </button>
+              </div>
+            }
+          </div>
         }
       </div>
     }
   </section>
 
-  <!-- Recomendaciones dinamicas basadas en carrito, filtros y favoritos. -->
+  <!-- [BUSCAR: CARRITO] Recomendaciones dinamicas basadas en carrito, filtros y favoritos. -->
   <section class="recommendations" id="recomendaciones" aria-labelledby="recommendations-title">
     <div class="section-header">
       <h2 id="recommendations-title">Recomendaciones para ti</h2>
@@ -166,6 +262,8 @@
           <app-producto-card
             [item]="item"
             [isFavorite]="isFavorite(item.id)"
+            [canBuy]="canBuy()"
+            [blockedActionText]="purchaseBlockedText()"
             (add)="agregarAlCarrito($event)"
             (toggleFavorite)="toggleFavorito($event)"
             (view)="openDetail($event)"
@@ -175,7 +273,7 @@
     }
   </section>
 
-  <!-- Favoritos guardados por el usuario para acceso rapido. -->
+  <!-- [BUSCAR: USUARIO] Favoritos guardados por el usuario para acceso rapido. -->
   <section class="favorites" aria-labelledby="favorites-title">
     <div class="section-header">
       <h2 id="favorites-title">Tus favoritos</h2>
@@ -190,6 +288,8 @@
           <app-producto-card
             [item]="item"
             [isFavorite]="isFavorite(item.id)"
+            [canBuy]="canBuy()"
+            [blockedActionText]="purchaseBlockedText()"
             (add)="agregarAlCarrito($event)"
             (toggleFavorite)="toggleFavorito($event)"
             (view)="openDetail($event)"
@@ -199,13 +299,14 @@
     }
   </section>
 
-  <!-- Carrito, resumen y checkout paso a paso con opcion de PayPal. -->
+  <!-- [BUSCAR: PAYPAL CARRITO CHECKOUT] Carrito, resumen y checkout paso a paso con opcion de PayPal. -->
+  @if (canBuy()) {
   <section class="cart" id="carrito" aria-labelledby="carrito-title">
     <div class="section-header">
       <h2 id="carrito-title">Carrito y ticket XML</h2>
       <p>
-        {{ cartItemsCount() }} items seleccionados con total de
-        {{ formatPrice(cartTotal()) }}.
+        {{ cartItemsCount() }} items seleccionados. Subtotal {{ formatPrice(cartSubtotal()) }},
+        IVA {{ formatPrice(cartIva()) }} y total {{ formatPrice(cartTotal()) }}.
       </p>
     </div>
 
@@ -256,17 +357,22 @@
               <dd>{{ cartItemsCount() }}</dd>
             </div>
             <div>
+              <dt>Subtotal</dt>
+              <dd>{{ formatPrice(cartSubtotal()) }}</dd>
+            </div>
+            <div>
+              <dt>IVA 16%</dt>
+              <dd>{{ formatPrice(cartIva()) }}</dd>
+            </div>
+            <div>
               <dt>Total</dt>
               <dd>{{ formatPrice(cartTotal()) }}</dd>
             </div>
           </dl>
 
           <div class="cart-actions">
-            <button class="primary-link" type="button" (click)="descargarTicket()">
-              Descargar ticket XML
-            </button>
             <button class="primary-link" type="button" (click)="openCheckout()">
-              Comprar y descargar ticket
+              Comprar y recibir ticket por correo
             </button>
             <button class="secondary-link" type="button" (click)="vaciarCarrito()">
               Vaciar carrito
@@ -292,6 +398,10 @@
                 <label>
                   Nombre completo
                   <input formControlName="customerName" type="text" placeholder="Tu nombre" />
+                </label>
+                <label>
+                  Correo para enviar ticket
+                  <input formControlName="customerEmail" type="email" placeholder="correo@ejemplo.com" />
                 </label>
                 <label>
                   Telefono (10 digitos)
@@ -350,9 +460,17 @@
                       para iniciar sesion, aprobar el pago y capturar la transaccion.
                     </p>
                   } @else {
-                    <p>Confirma tu pedido para generar el folio y activar el tracking de estado.</p>
+                    <p>Confirma el pago para enviar tu ticket XML y PDF al correo registrado.</p>
                   }
                   <dl>
+                    <div>
+                      <dt>Subtotal</dt>
+                      <dd>{{ formatPrice(cartSubtotal()) }}</dd>
+                    </div>
+                    <div>
+                      <dt>IVA 16%</dt>
+                      <dd>{{ formatPrice(cartIva()) }}</dd>
+                    </div>
                     <div>
                       <dt>Total</dt>
                       <dd>{{ formatPrice(cartTotal()) }}</dd>
@@ -368,7 +486,7 @@
                   </dl>
 
                   @if (checkoutForm.controls.paymentMethod.value === 'PayPal') {
-                       <!-- Punto de montaje del SDK oficial.
+                       <!-- [BUSCAR: PAYPAL] Punto de montaje del SDK oficial.
                          Angular no dibuja el boton manualmente; PayPal lo inyecta dentro de este div. -->
                     <div class="paypal-box">
                       <div id="paypal-button-container"></div>
@@ -382,6 +500,9 @@
                 <div class="order-status">
                   <p class="order-code">Folio: {{ orderCode() }}</p>
                   <p>{{ orderStatusLabel() }}</p>
+                  @if (receiptMessage()) {
+                    <p>{{ receiptMessage() }}</p>
+                  }
                 </div>
               }
             }
@@ -400,7 +521,7 @@
 
             @if (checkoutStep() === 3 && !orderCode() && checkoutForm.controls.paymentMethod.value !== 'PayPal') {
               <button class="primary-link" type="button" (click)="confirmOrder()">
-                Confirmar pedido y descargar ticket
+                Confirmar pago y enviar ticket
               </button>
             }
           </div>
@@ -408,6 +529,7 @@
       }
     }
   </section>
+  }
 
   <section class="mixology" id="mixologia" aria-labelledby="mixologia-title">
     <h2 id="mixologia-title">Mixologia de autor</h2>
@@ -424,6 +546,8 @@
           <app-producto-card
             [item]="drink"
             [isFavorite]="isFavorite(drink.id)"
+            [canBuy]="canBuy()"
+            [blockedActionText]="purchaseBlockedText()"
             (add)="agregarAlCarrito($event)"
             (toggleFavorite)="toggleFavorito($event)"
             (view)="openDetail($event)"
@@ -511,9 +635,11 @@
                 }
               </button>
 
-              <button class="primary-link" type="button" [disabled]="!item.inStock" (click)="agregarAlCarrito(item)">
-                Agregar al carrito
-              </button>
+              @if (canBuy()) {
+                <button class="primary-link" type="button" [disabled]="!item.inStock" (click)="agregarAlCarrito(item)">
+                  Agregar al carrito
+                </button>
+              }
             </div>
           </div>
         </div>

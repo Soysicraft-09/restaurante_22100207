@@ -1,14 +1,14 @@
 const { Buffer } = require('node:buffer');
 const { paypalConfig } = require('../config/paypal.config');
 
-// Convierte el clientId y el clientSecret en el formato Base64 que PayPal espera
-// para autenticarse con OAuth2 mediante el flujo de client credentials.
+// [BUSCAR: PAYPAL] Convierte el clientId y el clientSecret en el formato Base64 que PayPal espera
+// [BUSCAR: AUTENTICACION] para autenticarse con OAuth2 mediante el flujo de client credentials.
 const getBasicAuth = () => {
   const credentials = `${paypalConfig.clientId}:${paypalConfig.clientSecret}`;
   return Buffer.from(credentials).toString('base64');
 };
 
-// Pide a PayPal un token temporal de acceso para poder crear o capturar ordenes.
+// [BUSCAR: PAYPAL AUTENTICACION] Pide a PayPal un token temporal de acceso para poder crear o capturar ordenes.
 const getAccessToken = async () => {
   const response = await fetch(`${paypalConfig.baseUrl}/v1/oauth2/token`, {
     method: 'POST',
@@ -28,7 +28,7 @@ const getAccessToken = async () => {
   return data.access_token;
 };
 
-// Crea una orden de pago en PayPal y devuelve el ID, estado y URL de aprobacion.
+// [BUSCAR: PAYPAL PAGO PEDIDO] Crea una orden de pago en PayPal y devuelve el ID, estado y URL de aprobacion.
 const createOrderInPaypal = async ({ total, currency = 'MXN' }) => {
   const accessToken = await getAccessToken();
   const amountValue = Number(total || 0).toFixed(2);
@@ -69,8 +69,8 @@ const createOrderInPaypal = async ({ total, currency = 'MXN' }) => {
   };
 };
 
-// Captura una orden ya aprobada por el comprador; en este punto PayPal intenta
-// completar el cobro real.
+// [BUSCAR: PAYPAL PEDIDO] Captura una orden ya aprobada por el comprador; en este punto PayPal intenta
+// [BUSCAR: PAGO] completar el cobro real.
 const captureOrderInPaypal = async (orderId) => {
   const accessToken = await getAccessToken();
 

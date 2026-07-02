@@ -8,6 +8,6 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.css',
 })
 export class App {
-  // Titulo base de la aplicacion; el signal permite reactualizarlo si la UI lo requiere.
+  // [BUSCAR: ANGULAR INTERFAZ] Titulo base de la aplicacion; el signal permite reactualizarlo si la UI lo requiere.
   protected readonly title = signal('mi-proyecto');
 }

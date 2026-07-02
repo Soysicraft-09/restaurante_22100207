@@ -2,13 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { App } from './app';
 import { provideRouter } from '@angular/router';
 
-// Suite minima del componente raiz: construccion y presencia del router-outlet.
+// [BUSCAR: ANGULAR] Suite minima del componente raiz: construccion y presencia del router-outlet.
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      // Importo el componente raiz tal como se usaria en la app real.
+      // [BUSCAR: ANGULAR] Importo el componente raiz tal como se usaria en la app real.
       imports: [App],
-      // El router vacio es suficiente para estas pruebas basicas.
+      // [BUSCAR: ANGULAR PRUEBAS] El router vacio es suficiente para estas pruebas basicas.
       providers: [provideRouter([])],
     }).compileComponents();
   });

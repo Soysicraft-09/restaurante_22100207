@@ -1,4 +1,4 @@
-// Seed inicial del catalogo. Sirve como respaldo si la base de datos aun no tiene productos.
+// [BUSCAR: PRODUCTO BASE_DATOS ERRORES] Seed inicial del catalogo. Sirve como respaldo si la base de datos aun no tiene productos.
 module.exports = [
   {
     nombre: 'Tostada de Atun Aleta Azul',

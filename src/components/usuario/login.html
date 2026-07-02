@@ -1,21 +1,21 @@
-<!-- Vista de acceso: solo solicita credenciales y regresa al catalogo. -->
+<!-- [BUSCAR: AUTENTICACION PRODUCTO INTERFAZ] Vista de acceso: solo solicita credenciales y regresa al catalogo. -->
 <section class="user-form-shell">
   <a class="back-link" routerLink="/">Volver al restaurante</a>
   <h1>Iniciar sesión</h1>
   <form (ngSubmit)="login()" [formGroup]="form" class="user-form">
-    <!-- Campo de correo con validacion basica de formato. -->
+    <!-- [BUSCAR: CORREO FORMULARIO] Campo de correo con validacion basica de formato. -->
     <label>
       Correo
       <input type="email" formControlName="correo" placeholder="correo@ejemplo.com" />
     </label>
 
-    <!-- Campo de contrasena; el texto se oculta en el input. -->
+    <!-- [BUSCAR: AUTENTICACION FORMULARIO] Campo de contrasena; el texto se oculta en el input. -->
     <label>
       Contraseña
       <input type="password" formControlName="password" placeholder="********" />
     </label>
 
-    <!-- Envia el formulario a AuthService y muestra un error si algo falla. -->
+    <!-- [BUSCAR: FORMULARIO ERRORES] Envia el formulario a AuthService y muestra un error si algo falla. -->
     <button type="submit">Entrar</button>
     <p class="error" *ngIf="errorMessage()">{{ errorMessage() }}</p>
   </form>

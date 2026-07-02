@@ -9,8 +9,8 @@ import { ProductService } from '../../services/producto.service';
 import { paypalConfig } from '../../environments/paypal.config';
 import { ProductoCard } from '../producto-card/producto-card';
 
-// Estas interfaces documentan la informacion estatica de la landing.
-// En una app real podrian venir de CMS, pero aqui mantenerlas tipadas ayuda a estudiar Angular.
+// [BUSCAR: CATALOGO] Estas interfaces documentan la informacion estatica de la landing.
+// [BUSCAR: ANGULAR] En una app real podrian venir de CMS, pero aqui mantenerlas tipadas ayuda a estudiar Angular.
 interface InsightCard {
   value: string;
   title: string;
@@ -53,12 +53,13 @@ type PaymentMethod = 'Tarjeta' | 'Transferencia' | 'Efectivo' | 'PayPal';
   styleUrl: './catalogo.css',
 })
 export class Catalogo implements OnDestroy {
-  // Clave versionada: si cambia la forma de guardar favoritos, se puede migrar sin romper datos viejos.
+  // [BUSCAR: CATALOGO] Clave versionada: si cambia la forma de guardar favoritos, se puede migrar sin romper datos viejos.
   private readonly favoritesStorageKey = 'casa-quetzal-favorites-v1';
   private readonly authService = inject(AuthService);
   private readonly productService = inject(ProductService);
   private readonly carritoService = inject(CarritoService);
   private readonly paypalApiUrl = 'http://localhost:3000/api/paypal';
+  private readonly receiptApiUrl = 'http://localhost:3000/api/paypal/receipt';
   private readonly currencyFormatter = new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: 'MXN',
@@ -79,15 +80,35 @@ export class Catalogo implements OnDestroy {
   readonly orderStatus = signal<OrderStatus | null>(null);
   readonly orderCode = signal('');
   readonly paypalMessage = signal('');
+  readonly receiptMessage = signal('');
   readonly cartLines = this.carritoService.lineas;
+  readonly adminProductMessage = signal('');
+  readonly adminProductError = signal('');
+  readonly adminProductFormOpen = signal(false);
+  readonly editingProduct = signal<MenuItem | null>(null);
 
-  // Reactive Forms centraliza validacion y estado del checkout.
-  // PayPal se renderiza con el SDK oficial en el paso final, cuando ya conocemos total y cliente.
-  // La orden se crea y captura en backend para NO exponer el Client Secret en Angular.
+  // [BUSCAR: CHECKOUT FORMULARIO] Reactive Forms centraliza validacion y estado del checkout.
+  // [BUSCAR: PAYPAL] PayPal se renderiza con el SDK oficial en el paso final, cuando ya conocemos total y cliente.
+  // [BUSCAR: PAYPAL PEDIDO API ANGULAR] La orden se crea y captura en backend para NO exponer el Client Secret en Angular.
+  readonly adminProductForm = new FormGroup({
+    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    price: new FormControl(0, { nonNullable: true, validators: [Validators.required, Validators.min(1)] }),
+    imageUrl: new FormControl('', { nonNullable: true }),
+    category: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    description: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    inStock: new FormControl(true, { nonNullable: true }),
+    pairing: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    season: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+  });
+
   readonly checkoutForm = new FormGroup({
     customerName: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.minLength(3)],
+    }),
+    customerEmail: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
     }),
     phone: new FormControl('', {
       nonNullable: true,
@@ -109,9 +130,14 @@ export class Catalogo implements OnDestroy {
     cardLast4: new FormControl('', { nonNullable: true }),
   });
 
-  // computed recalcula derivaciones cuando cambian los signals de los que depende.
+  // [BUSCAR: CATALOGO] computed recalcula derivaciones cuando cambian los signals de los que depende.
   readonly favoriteSet = computed(() => new Set(this.favoriteIds()));
   readonly isAuthenticated = computed(() => this.authService.token() !== '');
+  readonly isAdmin = computed(() => this.authService.role() === 'admin');
+  readonly canBuy = computed(() => this.isAuthenticated() && !this.isAdmin());
+  readonly purchaseBlockedText = computed(() =>
+    this.isAdmin() ? 'Modo administrador' : 'Inicia sesion para comprar'
+  );
   readonly favoriteItems = computed(() => {
     const favoriteIds = this.favoriteSet();
     return this.menuItems().filter((item) => favoriteIds.has(item.id));
@@ -122,6 +148,8 @@ export class Catalogo implements OnDestroy {
   );
 
   readonly cartItemsCount = computed(() => this.carritoService.totalItems());
+  readonly cartSubtotal = computed(() => this.carritoService.subtotal());
+  readonly cartIva = computed(() => this.carritoService.iva());
   readonly cartTotal = computed(() => this.carritoService.total());
 
   readonly categoriesCount = computed(() => new Set(this.menuItems().map((dish) => dish.category)).size);
@@ -277,7 +305,7 @@ export class Catalogo implements OnDestroy {
     {
       title: 'Transparencia legal y comercial',
       description:
-        'Mostramos precios en MXN con impuestos incluidos y mantenemos politicas claras de privacidad.',
+        'Mostramos precios base en MXN y calculamos IVA en el carrito antes del pago.',
     },
     {
       title: 'Menu digital vivo',
@@ -302,7 +330,7 @@ export class Catalogo implements OnDestroy {
   ];
 
   constructor() {
-    // La UI no conoce si los datos vienen de API, XML o fallback: esa frontera pertenece al servicio.
+    // [BUSCAR: TICKET API INTERFAZ ERRORES] La UI no conoce si los datos vienen de API, XML o fallback: esa frontera pertenece al servicio.
     this.productService.getAll().subscribe({
       next: (items) => {
         this.menuItems.set(items);
@@ -315,7 +343,7 @@ export class Catalogo implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Al destruir el componente limpiamos timers para evitar efectos tardios sobre una vista inexistente.
+    // [BUSCAR: ANGULAR INTERFAZ RENDIMIENTO] Al destruir el componente limpiamos timers para evitar efectos tardios sobre una vista inexistente.
     this.clearOrderTimers();
   }
 
@@ -348,8 +376,139 @@ export class Catalogo implements OnDestroy {
   }
 
   agregarAlCarrito(item: MenuItem): void {
-    // El componente delega la regla del carrito al servicio; aqui solo responde a eventos de UI.
+    if (!this.canBuy()) {
+      return;
+    }
+
+    // [BUSCAR: CARRITO ANGULAR INTERFAZ] El componente delega la regla del carrito al servicio; aqui solo responde a eventos de UI.
     this.carritoService.agregar(item);
+  }
+
+  editarProducto(item: MenuItem): void {
+    this.adminProductMessage.set('');
+    this.adminProductError.set('');
+    this.adminProductFormOpen.set(true);
+    this.editingProduct.set(item);
+    this.adminProductForm.setValue({
+      name: item.name,
+      price: item.price,
+      imageUrl: item.imageUrl ?? '',
+      category: item.category,
+      description: item.description,
+      inStock: item.inStock,
+      pairing: item.pairing,
+      season: item.season,
+    });
+  }
+
+  nuevoProducto(): void {
+    this.adminProductMessage.set('');
+    this.adminProductError.set('');
+    this.editingProduct.set(null);
+    this.adminProductFormOpen.set(true);
+    this.adminProductForm.reset({
+      name: '',
+      price: 1,
+      imageUrl: '',
+      category: '',
+      description: '',
+      inStock: true,
+      pairing: '',
+      season: '',
+    });
+  }
+
+  cancelarEdicionProducto(): void {
+    this.editingProduct.set(null);
+    this.adminProductFormOpen.set(false);
+    this.adminProductForm.reset({
+      name: '',
+      price: 1,
+      imageUrl: '',
+      category: '',
+      description: '',
+      inStock: true,
+      pairing: '',
+      season: '',
+    });
+    this.adminProductError.set('');
+  }
+
+  guardarProductoAdmin(): void {
+    const editingProduct = this.editingProduct();
+
+    if (!this.adminProductFormOpen() || this.adminProductForm.invalid) {
+      this.adminProductError.set('Completa todos los datos obligatorios del producto.');
+      return;
+    }
+
+    const productPayload: Omit<MenuItem, 'id'> = {
+      name: this.adminProductForm.controls.name.value,
+      price: this.adminProductForm.controls.price.value,
+      imageUrl: this.adminProductForm.controls.imageUrl.value,
+      category: this.adminProductForm.controls.category.value,
+      description: this.adminProductForm.controls.description.value,
+      inStock: this.adminProductForm.controls.inStock.value,
+      pairing: this.adminProductForm.controls.pairing.value,
+      season: this.adminProductForm.controls.season.value,
+    };
+
+    this.adminProductError.set('');
+    this.adminProductMessage.set('');
+
+    if (!editingProduct) {
+      this.productService.create(productPayload).subscribe({
+        next: (createdProduct) => {
+          this.menuItems.update((items) => [...items, createdProduct]);
+          this.adminProductMessage.set('Producto agregado correctamente.');
+          this.cancelarEdicionProducto();
+        },
+        error: (error) => {
+          this.adminProductError.set(error.error?.error || 'No fue posible agregar el producto.');
+        },
+      });
+      return;
+    }
+
+    this.productService.update({ ...productPayload, id: editingProduct.id }).subscribe({
+      next: (savedProduct) => {
+        this.menuItems.update((items) =>
+          items.map((item) => (item.id === savedProduct.id ? savedProduct : item))
+        );
+        this.adminProductMessage.set('Producto actualizado correctamente.');
+        this.cancelarEdicionProducto();
+      },
+      error: (error) => {
+        this.adminProductError.set(error.error?.error || 'No fue posible actualizar el producto.');
+      },
+    });
+  }
+
+  eliminarProducto(item: MenuItem): void {
+    if (!confirm(`Â¿Eliminar "${item.name}" del menu? Esta accion no se puede deshacer.`)) {
+      return;
+    }
+
+    this.adminProductError.set('');
+    this.adminProductMessage.set('');
+
+    this.productService.delete(item.id).subscribe({
+      next: () => {
+        this.menuItems.update((items) => items.filter((product) => product.id !== item.id));
+        this.favoriteIds.update((ids) => {
+          const next = ids.filter((id) => id !== item.id);
+          this.persistFavoriteIds(next);
+          return next;
+        });
+        this.adminProductMessage.set('Producto eliminado correctamente.');
+        if (this.editingProduct()?.id === item.id) {
+          this.cancelarEdicionProducto();
+        }
+      },
+      error: (error) => {
+        this.adminProductError.set(error.error?.error || 'No fue posible eliminar el producto.');
+      },
+    });
   }
 
   toggleFavorito(item: MenuItem): void {
@@ -395,8 +554,8 @@ export class Catalogo implements OnDestroy {
   }
 
   openCheckout(): void {
-    // No tiene sentido abrir checkout sin productos; es una validacion de flujo, no de formulario.
-    if (this.cartLines().length === 0) {
+    // [BUSCAR: CHECKOUT FORMULARIO] No tiene sentido abrir checkout sin productos; es una validacion de flujo, no de formulario.
+    if (!this.canBuy() || this.cartLines().length === 0) {
       return;
     }
 
@@ -430,7 +589,7 @@ export class Catalogo implements OnDestroy {
     if (step === 1) {
       if (!this.validateStepOne()) {
         this.checkoutError.set(
-          'Completa los datos de entrega correctamente. El teléfono debe tener 10 dígitos y la dirección al menos 8 caracteres.'
+          'Completa los datos de entrega correctamente. El telÃ©fono debe tener 10 dÃ­gitos y la direcciÃ³n al menos 8 caracteres.'
         );
         return;
       }
@@ -440,8 +599,8 @@ export class Catalogo implements OnDestroy {
       if (!this.validateStepTwo()) {
         this.checkoutError.set(
           this.checkoutForm.controls.paymentMethod.value === 'Tarjeta'
-            ? 'Introduce los últimos 4 dígitos válidos de la tarjeta.'
-            : 'Selecciona un método de pago válido.'
+            ? 'Introduce los Ãºltimos 4 dÃ­gitos vÃ¡lidos de la tarjeta.'
+            : 'Selecciona un mÃ©todo de pago vÃ¡lido.'
         );
         return;
       }
@@ -458,38 +617,87 @@ export class Catalogo implements OnDestroy {
     }
   }
 
-  confirmOrder(): void {
+  async confirmOrder(): Promise<void> {
     if (!this.validateStepOne() || !this.validateStepTwo() || this.cartLines().length === 0) {
-      this.checkoutError.set('Completa toda la información necesaria antes de confirmar el pedido.');
+      this.checkoutError.set('Completa toda la informacion necesaria antes de confirmar el pedido.');
       return;
     }
+
     this.checkoutError.set('');
+    this.receiptMessage.set('Enviando ticket al correo...');
 
     const orderCode = this.buildOrderCode();
-    const purchasedLines = this.cartLines().map((line) => ({
+    const purchasedLines = this.buildPurchasedLines();
+
+    try {
+      await this.sendReceiptEmail(orderCode, purchasedLines);
+      this.finalizeOrder(orderCode, purchasedLines, 'Ticket XML y PDF enviado al correo.');
+    } catch (error) {
+      this.receiptMessage.set('');
+      this.checkoutError.set(
+        `No se pudo enviar el ticket por correo: ${this.getPayPalErrorMessage(error)}`
+      );
+    }
+  }
+
+  private buildPurchasedLines(): CartLine[] {
+    return this.cartLines().map((line) => ({
       ...line,
       item: { ...line.item },
     }));
+  }
 
+  // [BUSCAR: TICKET PAGO API] Payload del recibo enviado al backend para generar XML y PDF con cliente, pago, impuestos y productos.
+  private buildReceiptPayload(orderCode: string, purchasedLines: CartLine[], paymentMethod: PaymentMethod) {
+    return {
+      folio: orderCode,
+      customerName: this.checkoutForm.controls.customerName.value,
+      customerEmail: this.checkoutForm.controls.customerEmail.value,
+      paymentMethod,
+      taxRate: this.carritoService.ivaRate,
+      lines: purchasedLines,
+    };
+  }
+
+  private async readBackendResponse(response: Response): Promise<any> {
+    const contentType = response.headers.get('content-type') ?? '';
+    const body = await response.text();
+
+    if (contentType.includes('application/json')) {
+      return body ? JSON.parse(body) : {};
+    }
+
+    const preview = body.trim().slice(0, 80) || 'respuesta vacia';
+    throw new Error(
+      `El backend no devolvio JSON. Revisa que Express este corriendo y que la ruta exista. Respuesta: ${preview}`
+    );
+  }
+
+  private async sendReceiptEmail(orderCode: string, purchasedLines: CartLine[]): Promise<void> {
+    const response = await fetch(`${this.receiptApiUrl}/send`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(
+        this.buildReceiptPayload(orderCode, purchasedLines, this.checkoutForm.controls.paymentMethod.value)
+      ),
+    });
+
+    const result = await this.readBackendResponse(response);
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Error al enviar el ticket');
+    }
+  }
+
+  private finalizeOrder(orderCode: string, purchasedLines: CartLine[], message: string): void {
     this.orderCode.set(orderCode);
     this.orderStatus.set('recibido');
     this.checkoutStep.set(3);
+    this.receiptMessage.set(message);
     this.scheduleOrderProgress();
-    this.carritoService.exportarTicketXMLConOpciones({
-      folio: orderCode,
-      paymentMethod: this.checkoutForm.controls.paymentMethod.value,
-      customerName: this.checkoutForm.controls.customerName.value,
-      lines: purchasedLines,
-    });
     this.carritoService.vaciar();
-  }
-
-  descargarTicket(): void {
-    if (this.cartLines().length === 0) {
-      return;
-    }
-
-    this.carritoService.exportarTicketXML();
   }
 
   formatPrice(value: number): string {
@@ -497,9 +705,10 @@ export class Catalogo implements OnDestroy {
   }
 
   private validateStepOne(): boolean {
-    // Paso 1: datos logisticos minimos para poder entregar el pedido.
+    // [BUSCAR: PEDIDO] Paso 1: datos logisticos minimos para poder entregar el pedido.
     const controls = [
       this.checkoutForm.controls.customerName,
+      this.checkoutForm.controls.customerEmail,
       this.checkoutForm.controls.phone,
       this.checkoutForm.controls.address,
       this.checkoutForm.controls.deliveryTime,
@@ -523,8 +732,8 @@ export class Catalogo implements OnDestroy {
   }
 
   private validateStepTwo(): boolean {
-    // Paso 2: valida la forma de pago.
-    // Tarjeta necesita ultimos 4 digitos; PayPal NO, porque la aprobacion ocurre en su ventana oficial.
+    // [BUSCAR: PAGO] Paso 2: valida la forma de pago.
+    // [BUSCAR: PAYPAL PAGO INTERFAZ] Tarjeta necesita ultimos 4 digitos; PayPal NO, porque la aprobacion ocurre en su ventana oficial.
     const paymentControl = this.checkoutForm.controls.paymentMethod;
     const cardControl = this.checkoutForm.controls.cardLast4;
 
@@ -549,13 +758,13 @@ export class Catalogo implements OnDestroy {
   }
 
   private async renderPayPalButtons(): Promise<void> {
-    // Guardia 1: no renderizar dos veces el mismo boton.
-    // Guardia 2: si ya hay folio, la compra termino y no debe existir otro intento de pago.
+    // [BUSCAR: INTERFAZ] Guardia 1: no renderizar dos veces el mismo boton.
+    // [BUSCAR: CARRITO PAGO PEDIDO] Guardia 2: si ya hay folio, la compra termino y no debe existir otro intento de pago.
     if (this.paypalButtonsRendered || this.orderCode()) {
       return;
     }
 
-    // El contenedor existe solo en el paso 3 y solo si el metodo elegido es PayPal.
+    // [BUSCAR: PAYPAL] El contenedor existe solo en el paso 3 y solo si el metodo elegido es PayPal.
     const container = document.querySelector('#paypal-button-container');
 
     if (!container) {
@@ -572,11 +781,11 @@ export class Catalogo implements OnDestroy {
     this.paypalMessage.set('Cargando PayPal...');
 
     try {
-      // Primero cargamos el script oficial. Si falla, no hay boton que renderizar.
+      // [BUSCAR: INTERFAZ ERRORES] Primero cargamos el script oficial. Si falla, no hay boton que renderizar.
       await this.loadPayPalSdk();
       container.innerHTML = '';
 
-      // Aqui conectamos nuestro flujo Angular/Express con el ciclo de vida del boton PayPal.
+      // [BUSCAR: PAYPAL API ANGULAR INTERFAZ] Aqui conectamos nuestro flujo Angular/Express con el ciclo de vida del boton PayPal.
       const buttons = window.paypal?.Buttons({
         style: {
           layout: 'vertical',
@@ -586,8 +795,8 @@ export class Catalogo implements OnDestroy {
         },
         createOrder: async () => {
           try {
-            // PayPal llama createOrder cuando el usuario presiona el boton.
-            // Nosotros pedimos al backend crear la orden para mantener credenciales secretas fuera del navegador.
+            // [BUSCAR: PAYPAL USUARIO INTERFAZ] PayPal llama createOrder cuando el usuario presiona el boton.
+            // [BUSCAR: AUTENTICACION PEDIDO API] Nosotros pedimos al backend crear la orden para mantener credenciales secretas fuera del navegador.
             const response = await fetch(`${this.paypalApiUrl}/orders`, {
               method: 'POST',
               headers: {
@@ -598,7 +807,7 @@ export class Catalogo implements OnDestroy {
                 currency: paypalConfig.currency,
               }),
             });
-            const order = await response.json();
+            const order = await this.readBackendResponse(response);
 
             if (!response.ok || !order.id) {
               const message = this.getPayPalErrorMessage(order);
@@ -608,7 +817,7 @@ export class Catalogo implements OnDestroy {
 
             return order.id;
           } catch (error) {
-            // Si no se crea la orden, PayPal cierra/interrumpe el flujo porque no tiene nada que aprobar.
+            // [BUSCAR: PAYPAL PEDIDO] Si no se crea la orden, PayPal cierra/interrumpe el flujo porque no tiene nada que aprobar.
             const message = this.getPayPalErrorMessage(error);
             this.paypalMessage.set(
               `PayPal cerro la ventana porque no pudo crear la orden: ${message}`
@@ -617,16 +826,24 @@ export class Catalogo implements OnDestroy {
           }
         },
         onApprove: async (data) => {
-          // onApprove significa: el comprador autorizo en PayPal.
-          // Todavia falta capturar; aprobar NO siempre equivale a cobrar.
+          // [BUSCAR: PAYPAL] onApprove significa: el comprador autorizo en PayPal.
+          // [BUSCAR: CATALOGO] Todavia falta capturar; aprobar NO siempre equivale a cobrar.
           this.paypalMessage.set('Pago aprobado. Capturando transaccion...');
 
           try {
-            // La captura se hace en backend porque requiere comunicarse con PayPal usando access token.
+            // [BUSCAR: PAYPAL AUTENTICACION API] La captura se hace en backend porque requiere comunicarse con PayPal usando access token.
+            const orderCode = this.buildOrderCode();
+            const purchasedLines = this.buildPurchasedLines();
             const response = await fetch(`${this.paypalApiUrl}/orders/${data.orderID}/capture`, {
               method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                receipt: this.buildReceiptPayload(orderCode, purchasedLines, 'PayPal'),
+              }),
             });
-            const capture = await response.json();
+            const capture = await this.readBackendResponse(response);
 
             if (!response.ok) {
               const message = this.getPayPalErrorMessage(capture);
@@ -634,9 +851,14 @@ export class Catalogo implements OnDestroy {
               throw new Error(message);
             }
 
-            this.paypalMessage.set('Pago capturado. Generando ticket...');
-            // Reutilizamos el flujo normal de pedido: genera folio, XML, tracking y vacia carrito.
-            this.confirmOrder();
+            if (capture.receiptError) {
+              this.paypalMessage.set(`Pago capturado, pero fallo el envio del ticket: ${capture.receiptError}`);
+              this.finalizeOrder(orderCode, purchasedLines, 'Pago capturado. Ticket pendiente de envio.');
+              return;
+            }
+
+            this.paypalMessage.set('Pago capturado. Ticket enviado al correo.');
+            this.finalizeOrder(orderCode, purchasedLines, 'Ticket XML y PDF enviado al correo.');
           } catch (error) {
             const message = this.getPayPalErrorMessage(error);
             this.paypalMessage.set(`PayPal aprobo, pero fallo la captura: ${message}`);
@@ -670,7 +892,7 @@ export class Catalogo implements OnDestroy {
   }
 
   private loadPayPalSdk(): Promise<void> {
-    // Si el script ya cargo en esta sesion, no lo insertamos otra vez.
+    // [BUSCAR: AUTENTICACION] Si el script ya cargo en esta sesion, no lo insertamos otra vez.
     if (window.paypal) {
       return Promise.resolve();
     }
@@ -678,7 +900,7 @@ export class Catalogo implements OnDestroy {
     return new Promise((resolve, reject) => {
       const existingScript = document.querySelector<HTMLScriptElement>('script[data-paypal-sdk]');
 
-      // Evita carreras: si dos renderizados intentan cargar PayPal, ambos esperan el mismo script.
+      // [BUSCAR: PAYPAL RENDIMIENTO] Evita carreras: si dos renderizados intentan cargar PayPal, ambos esperan el mismo script.
       if (existingScript) {
         existingScript.addEventListener('load', () => resolve(), { once: true });
         existingScript.addEventListener('error', () => reject(), { once: true });
@@ -687,8 +909,8 @@ export class Catalogo implements OnDestroy {
 
       const script = document.createElement('script');
 
-      // Estos query params configuran el SDK antes de descargarlo.
-      // Un valor invalido aqui rompe la carga completa del script; por eso el locale debe ser `es_MX`.
+      // [BUSCAR: PAYPAL] Estos query params configuran el SDK antes de descargarlo.
+      // [BUSCAR: CATALOGO] Un valor invalido aqui rompe la carga completa del script; por eso el locale debe ser `es_MX`.
       const params = new URLSearchParams({
         'client-id': paypalConfig.clientId,
         currency: paypalConfig.currency,
@@ -708,11 +930,11 @@ export class Catalogo implements OnDestroy {
   }
 
   private getPayPalErrorMessage(error: unknown): string {
-    // Normaliza errores de varios origenes:
-    // - Error nativo de JS
-    // - string directo
-    // - respuesta JSON del backend
-    // - respuesta JSON anidada de PayPal con details[]
+    // [BUSCAR: ERRORES] Normaliza errores de varios origenes:
+    // [BUSCAR: ERRORES] - Error nativo de JS
+    // [BUSCAR: CATALOGO] - string directo
+    // [BUSCAR: API] - respuesta JSON del backend
+    // [BUSCAR: PAYPAL] - respuesta JSON anidada de PayPal con details[]
     if (error instanceof Error) {
       return error.message;
     }
@@ -754,7 +976,7 @@ export class Catalogo implements OnDestroy {
   }
 
   private scheduleOrderProgress(): void {
-    // Simulamos tracking del restaurante; cada timer representa un cambio de estado operativo.
+    // [BUSCAR: PEDIDO RENDIMIENTO] Simulamos tracking del restaurante; cada timer representa un cambio de estado operativo.
     this.clearOrderTimers();
 
     this.orderTimers.push(
@@ -765,7 +987,7 @@ export class Catalogo implements OnDestroy {
   }
 
   private clearOrderTimers(): void {
-    // Cancela cualquier simulacion de tracking pendiente antes de desmontar o reiniciar el pedido.
+    // [BUSCAR: PEDIDO] Cancela cualquier simulacion de tracking pendiente antes de desmontar o reiniciar el pedido.
     for (const timer of this.orderTimers) {
       clearTimeout(timer);
     }
@@ -774,13 +996,13 @@ export class Catalogo implements OnDestroy {
   }
 
   private buildOrderCode(): string {
-    // Folio legible para el usuario; no es criptograficamente unico, solo identificador de demo.
+    // [BUSCAR: USUARIO PEDIDO] Folio legible para el usuario; no es criptograficamente unico, solo identificador de demo.
     const seed = Math.random().toString(36).slice(2, 8).toUpperCase();
     return `CQ-${seed}`;
   }
 
   private readFavoriteIds(): number[] {
-    // Recupera favoritos persistidos, pero ignora cualquier dato corrupto o incoherente.
+    // [BUSCAR: ERRORES RENDIMIENTO] Recupera favoritos persistidos, pero ignora cualquier dato corrupto o incoherente.
     try {
       const raw = localStorage.getItem(this.favoritesStorageKey);
 
@@ -801,11 +1023,11 @@ export class Catalogo implements OnDestroy {
   }
 
   private persistFavoriteIds(ids: number[]): void {
-    // La persistencia de favoritos es secundaria; si falla, la UI sigue funcionando.
+    // [BUSCAR: INTERFAZ ERRORES RENDIMIENTO] La persistencia de favoritos es secundaria; si falla, la UI sigue funcionando.
     try {
       localStorage.setItem(this.favoritesStorageKey, JSON.stringify(ids));
     } catch {
-      // Ignored: favorites persistence is best-effort only.
+      // [BUSCAR: RENDIMIENTO] Ignored: favorites persistence is best-effort only.
     }
   }
 }

@@ -1,4 +1,4 @@
-/* Variables de color y radios para que toda la pagina comparta la misma identidad visual. */
+/* [BUSCAR: INTERFAZ] Variables de color y radios para que toda la pagina comparta la misma identidad visual. */
 :host {
   --accent: #8f1f2f;
   --accent-strong: #641522;
@@ -25,7 +25,7 @@
   display: block;
 }
 
-/* Contenedor principal del sitio con ancho maximo, padding y separacion entre secciones. */
+/* [BUSCAR: CATALOGO] Contenedor principal del sitio con ancho maximo, padding y separacion entre secciones. */
 .gourmet-page {
   width: min(1480px, 100%);
   min-height: 100vh;
@@ -35,7 +35,7 @@
   gap: 14px;
 }
 
-/* Las secciones comparten scroll-margin y card base para que el anclaje quede limpio. */
+/* [BUSCAR: CATALOGO] Las secciones comparten scroll-margin y card base para que el anclaje quede limpio. */
 .hero,
 .insights,
 .story,
@@ -53,14 +53,14 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* Hero inicial con gradiente suave y una banda lateral como acento editorial. */
+/* [BUSCAR: INTERFAZ] Hero inicial con gradiente suave y una banda lateral como acento editorial. */
 .hero {
   padding: 0;
   overflow: hidden;
   color: var(--ink-strong);
 }
 
-/* Navegacion superior fija para mantener accesos rapidos visibles mientras se navega. */
+/* [BUSCAR: CATALOGO] Navegacion superior fija para mantener accesos rapidos visibles mientras se navega. */
 .top-nav {
   position: sticky;
   top: 0;
@@ -77,7 +77,7 @@
   box-shadow: 0 12px 22px rgb(24 20 16 / 18%);
 }
 
-/* Identidad de marca en la esquina izquierda del nav. */
+/* [BUSCAR: INTERFAZ] Identidad de marca en la esquina izquierda del nav. */
 .brand {
   margin: 0;
   text-decoration: none;
@@ -88,7 +88,7 @@
   white-space: nowrap;
 }
 
-/* Acciones del nav: enlaces, sesion y carrito en una sola fila desplazable. */
+/* [BUSCAR: AUTENTICACION CARRITO INTERFAZ] Acciones del nav: enlaces, sesion y carrito en una sola fila desplazable. */
 .nav-actions {
   display: flex;
   justify-content: flex-end;
@@ -104,7 +104,7 @@
   display: none;
 }
 
-/* Boton destacado para el carrito con contador visible. */
+/* [BUSCAR: CARRITO INTERFAZ] Boton destacado para el carrito con contador visible. */
 .toolbar-cart {
   min-height: 34px;
   display: inline-flex;
@@ -121,7 +121,7 @@
   flex: 0 0 auto;
 }
 
-/* Indicador de sesion y accion de cerrar sesion. */
+/* [BUSCAR: AUTENTICACION] Indicador de sesion y accion de cerrar sesion. */
 .session-badge,
 .session-action {
   min-height: 34px;
@@ -168,7 +168,7 @@
   font-size: 0.78rem;
 }
 
-/* Cabecera visual del hero con overlay y barra lateral de acento. */
+/* [BUSCAR: INTERFAZ] Cabecera visual del hero con overlay y barra lateral de acento. */
 .hero-content {
   padding: 20px;
   display: grid;
@@ -189,14 +189,14 @@
   background: linear-gradient(180deg, var(--accent), var(--gold), var(--teal));
 }
 
-/* Contenido textual del hero: kicker, titulo y propuesta principal. */
+/* [BUSCAR: INTERFAZ] Contenido textual del hero: kicker, titulo y propuesta principal. */
 .hero-copy {
   display: grid;
   gap: 12px;
   align-content: center;
 }
 
-/* Texto de apertura que introduce el concepto del restaurante. */
+/* [BUSCAR: CATALOGO] Texto de apertura que introduce el concepto del restaurante. */
 .kicker {
   margin: 0;
   color: var(--accent);
@@ -206,7 +206,7 @@
   text-transform: uppercase;
 }
 
-/* Titulo principal de la landing. */
+/* [BUSCAR: CATALOGO] Titulo principal de la landing. */
 h1 {
   max-width: 880px;
   margin: 0;
@@ -217,7 +217,7 @@ h1 {
   font-weight: 800;
 }
 
-/* Parrafo introductorio del hero. */
+/* [BUSCAR: INTERFAZ] Parrafo introductorio del hero. */
 .lead {
   max-width: 840px;
   margin: 0;
@@ -226,7 +226,7 @@ h1 {
   font-size: 0.98rem;
 }
 
-/* Grupo de CTA del hero y acciones de checkout/detalle. */
+/* [BUSCAR: CHECKOUT INTERFAZ] Grupo de CTA del hero y acciones de checkout/detalle. */
 .hero-ctas,
 .checkout-actions,
 .detail-actions {
@@ -235,12 +235,12 @@ h1 {
   flex-wrap: wrap;
 }
 
-/* Ajuste de margen superior para el bloque de CTA del hero. */
+/* [BUSCAR: INTERFAZ] Ajuste de margen superior para el bloque de CTA del hero. */
 .hero-ctas {
   margin-top: 4px;
 }
 
-/* Estilo base de enlaces tipo boton para acciones primarias y secundarias. */
+/* [BUSCAR: INTERFAZ] Estilo base de enlaces tipo boton para acciones primarias y secundarias. */
 .primary-link,
 .secondary-link,
 .ghost-link {
@@ -258,7 +258,7 @@ h1 {
   cursor: pointer;
 }
 
-/* Boton principal del sistema. */
+/* [BUSCAR: INTERFAZ] Boton principal del sistema. */
 .primary-link {
   border: 1px solid var(--accent);
   background: var(--accent);
@@ -270,7 +270,7 @@ h1 {
   border-color: var(--accent-strong);
 }
 
-/* Boton secundario neutral para acciones menos prioritarias. */
+/* [BUSCAR: INTERFAZ] Boton secundario neutral para acciones menos prioritarias. */
 .secondary-link {
   border: 1px solid var(--line-strong);
   background: #fff;
@@ -283,7 +283,7 @@ h1 {
   background: #f7f5f2;
 }
 
-/* Enlace discreto sin relleno, usado en navegacion y cierres. */
+/* [BUSCAR: INTERFAZ] Enlace discreto sin relleno, usado en navegacion y cierres. */
 .ghost-link {
   border: 1px solid transparent;
   background: transparent;
@@ -303,7 +303,7 @@ button.ghost-link {
   font: inherit;
 }
 
-/* Contenedor de los dos paneles introductorios. */
+/* [BUSCAR: CATALOGO] Contenedor de los dos paneles introductorios. */
 .intro-panels {
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
@@ -311,7 +311,7 @@ button.ghost-link {
   align-items: stretch;
 }
 
-/* Bloques tipo tarjeta para contenido editorial, menu y checkout. */
+/* [BUSCAR: CHECKOUT PAGO PRODUCTO INTERFAZ] Bloques tipo tarjeta para contenido editorial, menu y checkout. */
 .insights,
 .story,
 .menu-section,
@@ -324,20 +324,20 @@ button.ghost-link {
   padding: 16px;
 }
 
-/* Seccion de delivery con fondo oscuro para diferenciar el proceso de compra. */
+/* [BUSCAR: CARRITO CHECKOUT] Seccion de delivery con fondo oscuro para diferenciar el proceso de compra. */
 .delivery {
   background: #201a17;
   border-color: #342923;
   color: #f8f4ef;
 }
 
-/* Panel de viabilidad con acento dorado. */
+/* [BUSCAR: CATALOGO] Panel de viabilidad con acento dorado. */
 .insights {
   border-top: 4px solid var(--gold);
   background: #fffaf1;
 }
 
-/* Panel de historia con acento tierra. */
+/* [BUSCAR: CATALOGO] Panel de historia con acento tierra. */
 .story {
   border-top: 4px solid var(--clay);
   background: #fffdfa;
@@ -802,6 +802,108 @@ h2 {
   color: var(--danger);
   border-color: #efc6c9;
   background: #fff4f4;
+}
+
+.status.success {
+  color: var(--success);
+  border-color: #b7ded8;
+  background: #f0fdfa;
+}
+
+.admin-panel {
+  margin: 14px 18px;
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-alt);
+}
+
+.admin-panel h3,
+.admin-panel p {
+  margin: 0;
+}
+
+.admin-product-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-product-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.admin-product-form h4 {
+  margin: 0;
+  color: var(--ink-strong);
+}
+
+.admin-product-form input,
+.admin-product-form textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.72rem;
+  font: inherit;
+  background: #fff;
+}
+
+.admin-product-form .full-row {
+  grid-column: 1 / -1;
+}
+
+.checkbox-row {
+  align-content: start;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+
+.checkbox-row input {
+  width: auto;
+}
+
+.admin-form-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-add-button {
+  justify-self: start;
+}
+
+.admin-product-shell {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-product-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-edit-button,
+.admin-delete-button {
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--accent-muted);
+  color: var(--accent-strong);
+  padding: 0.7rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-delete-button {
+  border-color: #efc6c9;
+  background: #fff4f4;
+  color: var(--danger);
 }
 
 .checkout {

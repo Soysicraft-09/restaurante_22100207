@@ -1,27 +1,29 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 import { MenuItem } from '../models/producto.model';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private readonly http = inject(HttpClient);
-  // Cache local para que el menu siga disponible si el backend falla.
+  private readonly authService = inject(AuthService);
+  // [BUSCAR: PRODUCTO API ERRORES RENDIMIENTO] Cache local para que el menu siga disponible si el backend falla.
   private readonly cacheStorageKey = 'casa-quetzal-menu-cache-v1';
   private readonly apiUrl = 'http://localhost:3000/api/productos';
   private readonly menuCache = this.readMenuCache();
   private request$: Observable<MenuItem[]> | null = null;
 
   getAll(): Observable<MenuItem[]> {
-    // shareReplay + request$ evitan disparar multiples HTTP si varios componentes piden el menu.
+    // [BUSCAR: PRODUCTO API] shareReplay + request$ evitan disparar multiples HTTP si varios componentes piden el menu.
     if (this.request$) {
       return this.request$;
     }
 
     this.request$ = this.http.get<MenuItem[]>(this.apiUrl).pipe(
       switchMap((apiItems) => {
-        // Validar la frontera HTTP es FUNDAMENTAL: TypeScript no valida JSON en runtime.
+        // [BUSCAR: API ANGULAR] Validar la frontera HTTP es FUNDAMENTAL: TypeScript no valida JSON en runtime.
         if (Array.isArray(apiItems) && apiItems.every((item) => this.isMenuItem(item))) {
           return of(apiItems);
         }
@@ -29,7 +31,7 @@ export class ProductService {
         throw new Error('La API devolvio datos invalidos');
       }),
       catchError(() => {
-        // Estrategia por capas: API -> cache local -> XML publico -> datos de emergencia.
+        // [BUSCAR: TICKET API RENDIMIENTO] Estrategia por capas: API -> cache local -> XML publico -> datos de emergencia.
         if (this.menuCache.length > 0) {
           return of(this.menuCache);
         }
@@ -52,8 +54,55 @@ export class ProductService {
     return this.request$;
   }
 
+  update(item: MenuItem): Observable<MenuItem> {
+    return this.http
+      .put<MenuItem>(`${this.apiUrl}/${item.id}`, item, { headers: this.authHeaders() })
+      .pipe(
+        tap((updatedItem) => {
+          const next = this.menuCache.map((cachedItem) =>
+            cachedItem.id === updatedItem.id ? updatedItem : cachedItem
+          );
+          this.menuCache.splice(0, this.menuCache.length, ...next);
+          this.writeMenuCache(next);
+          this.request$ = null;
+        })
+      );
+  }
+
+  create(item: Omit<MenuItem, 'id'>): Observable<MenuItem> {
+    return this.http.post<MenuItem>(this.apiUrl, item, { headers: this.authHeaders() }).pipe(
+      tap((createdItem) => {
+        const next = [...this.menuCache, createdItem];
+        this.menuCache.splice(0, this.menuCache.length, ...next);
+        this.writeMenuCache(next);
+        this.request$ = null;
+      })
+    );
+  }
+
+  delete(id: number): Observable<{ message: string; id: number }> {
+    return this.http
+      .delete<{ message: string; id: number }>(`${this.apiUrl}/${id}`, { headers: this.authHeaders() })
+      .pipe(
+        tap(() => {
+          const next = this.menuCache.filter((cachedItem) => cachedItem.id !== id);
+          this.menuCache.splice(0, this.menuCache.length, ...next);
+          this.writeMenuCache(next);
+          this.request$ = null;
+        })
+      );
+  }
+
+  clearCache(): void {
+    this.request$ = null;
+  }
+
+  private authHeaders() {
+    return new HttpHeaders({ Authorization: `Bearer ${this.authService.token()}` });
+  }
+
   private parseMenuWithDom(xmlText: string): MenuItem[] {
-    // DOMParser permite convertir el XML estatico del proyecto al mismo contrato MenuItem.
+    // [BUSCAR: TICKET] DOMParser permite convertir el XML estatico del proyecto al mismo contrato MenuItem.
     const doc = new DOMParser().parseFromString(xmlText, 'application/xml');
     const parserError = doc.querySelector('parsererror');
 
@@ -115,12 +164,12 @@ export class ProductService {
     try {
       localStorage.setItem(this.cacheStorageKey, JSON.stringify(items));
     } catch {
-      // Ignored: cache persistence is best-effort only.
+      // [BUSCAR: RENDIMIENTO] Ignored: cache persistence is best-effort only.
     }
   }
 
   private isMenuItem(item: unknown): item is MenuItem {
-    // Type guard: convierte datos "unknown" en MenuItem solo si cumplen el contrato completo.
+    // [BUSCAR: PRODUCTO] Type guard: convierte datos "unknown" en MenuItem solo si cumplen el contrato completo.
     if (!item || typeof item !== 'object') {
       return false;
     }

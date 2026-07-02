@@ -3,14 +3,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductoCard } from './producto-card';
 import { MenuItem } from '../../models/producto.model';
 
-// Verifica que la tarjeta soporte un MenuItem valido via input signal.
+// [BUSCAR: PAGO ANGULAR FORMULARIO INTERFAZ] Verifica que la tarjeta soporte un MenuItem valido via input signal.
 describe('ProductoCard', () => {
   let component: ProductoCard;
   let fixture: ComponentFixture<ProductoCard>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      // La tarjeta se prueba sola porque recibe todo por input.
+      // [BUSCAR: PAGO FORMULARIO INTERFAZ PRUEBAS] La tarjeta se prueba sola porque recibe todo por input.
       imports: [ProductoCard]
     })
     .compileComponents();
@@ -30,13 +30,13 @@ describe('ProductoCard', () => {
       season: 'Temporada test',
     };
 
-    // setInput es la forma correcta de alimentar un input signal en pruebas.
+    // [BUSCAR: ANGULAR FORMULARIO PRUEBAS] setInput es la forma correcta de alimentar un input signal en pruebas.
     fixture.componentRef.setInput('item', dishMock);
     await fixture.whenStable();
   });
 
   it('should create', () => {
-    // Valida que la tarjeta se pueda montar con un producto valido.
+    // [BUSCAR: PAGO PRODUCTO INTERFAZ] Valida que la tarjeta se pueda montar con un producto valido.
     expect(component).toBeTruthy();
   });
 });

@@ -17,11 +17,11 @@ export class HistorialUsuario {
   readonly errorMessage = signal('');
 
   constructor() {
-    // El historial se carga apenas entra a la vista para no requerir clic extra.
+    // [BUSCAR: USUARIO INTERFAZ] El historial se carga apenas entra a la vista para no requerir clic extra.
     this.loadHistory();
   }
 
-  // Consulta la bitacora del usuario autenticado desde el backend.
+  // [BUSCAR: AUTENTICACION USUARIO API] Consulta la bitacora del usuario autenticado desde el backend.
   private loadHistory() {
     this.authService.getHistory().subscribe({
       next: (items) => this.history.set(items),
@@ -29,7 +29,7 @@ export class HistorialUsuario {
     });
   }
 
-  // Cierra la sesion local y regresa al login.
+  // [BUSCAR: AUTENTICACION] Cierra la sesion local y regresa al login.
   logout() {
     this.authService.logout();
     this.router.navigate(['/usuario/login']);

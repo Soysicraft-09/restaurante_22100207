@@ -10,10 +10,10 @@ const authMiddleware = require('../middleware/auth.middleware');
 
 const router = express.Router();
 
-// Registro y login son publicos porque todavia no existe sesion.
+// [BUSCAR: AUTENTICACION USUARIO] Registro y login son publicos porque todavia no existe sesion.
 router.post('/register', register);
 router.post('/login', login);
-// Perfil e historial requieren token JWT valido.
+// [BUSCAR: AUTENTICACION USUARIO] Perfil e historial requieren token JWT valido.
 router.get('/profile', authMiddleware, getProfile);
 router.put('/profile', authMiddleware, updateProfile);
 router.get('/history', authMiddleware, getHistory);
